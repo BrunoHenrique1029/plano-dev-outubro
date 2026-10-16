@@ -73,10 +73,7 @@ function render() {
   $("#empty").hidden = list.length > 0;
 
   const ban = $("#banner");
-  if (pendingRestore) {
-    ban.hidden = false;
-    ban.innerHTML = `<span>Restaurar ${pendingRestore.planos.length} planos desta cópia? Os planos que estão na cópia voltam a ficar como eram nela. Dá para desfazer depois.</span><button class="warn" data-ban="restore-ok">Restaurar</button><button data-ban="restore-no">Cancelar</button>`;
-  } else if (connectFrom) {
+  if (connectFrom) {
     ban.hidden = false;
     ban.innerHTML = `<span>Agora clique no plano que vai receber este.</span><button data-ban="connect-no">Cancelar</button>`;
   } else ban.hidden = true;
@@ -299,7 +296,7 @@ function drawEdges() {
   const hd = document.getElementById("hubs");
   if (hd) hd.innerHTML = hb;
 }
-/* all = "Ver tudo". Sem ele, em celular e tablet em pé o mapa não fica minúsculo: começa legível pelo início do fluxo. */
+/* all = "Ver tudo". Sem ele, em tela pequena o mapa não fica minúsculo: começa legível pelo início do fluxo. */
 function fit(all) {
   const b = $("#board").getBoundingClientRect(),
     list = here().filter(isShown);
@@ -323,7 +320,7 @@ function fit(all) {
     minS = b.width < 600 ? 0.18 : 0.3;
   const s = Math.max(minS, Math.min(1, (b.width - pad) / (x1 - x0 || 1), (b.height - 90) / (y1 - y0 || 1)));
   const readable = 0.55;
-  if (all !== true && b.width < 900 && s < readable) {
+  if (all !== true && b.width < 600 && s < readable) {
     view = {
       s: readable,
       tx: 16 - x0 * readable,

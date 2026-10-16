@@ -1,6 +1,7 @@
 /* Base: cores, letras, cabeçalho, botões e rodapé */
 /* Layout: abas de mapas em cima, quadro livre com grade de pontos; planos principais são cartões, planos conectados são pílulas; relatório abre numa aba lateral */
-/* Tema claro e sóbrio (sempre claro, pedido do Bruno): pedra clara, grafite, ferrugem e azul petróleo; letras condensadas firmes e cantos mais retos */
+/* Tema claro e sóbrio por padrão (pedido do Bruno): pedra clara, grafite, ferrugem e azul petróleo; letras condensadas firmes e cantos mais retos.
+   O botão no topo troca para o modo escuro (js/tema.js), que usa as mesmas cores sobre grafite escuro. */
 :root {
   --bg: #f5f4f1;
   --surface: #ffffff;
@@ -20,11 +21,38 @@
   --clay: #a64f2a;
   --sand: #ece9e4;
   --shadow: 0 6px 18px rgba(30, 28, 25, 0.07);
+  --label: #3b2a21;
+  --on-color: #fff;
+  --on-fg: #fff;
   --f-script: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --f-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --f-body: "Barlow", "Segoe UI", system-ui, sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   color-scheme: light;
+}
+:root[data-tema="escuro"] {
+  --bg: #1b1a18;
+  --surface: #252320;
+  --fg: #ebe7e0;
+  --muted: #a29c92;
+  --line: #3b3833;
+  --grid: #3b3833;
+  --accent: #4a9fa9;
+  --danger: #d0583c;
+  --p-D: #6e9bc0;
+  --p-A: #d0794c;
+  --p-C: #97ad62;
+  --p-all: #a0a5ad;
+  --st-doing: #d6a243;
+  --st-blocked: #d0583c;
+  --hit: #4a9fa9;
+  --clay: #b45a31;
+  --sand: #2f2c28;
+  --shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --label: #efe9e2;
+  --on-color: #1b1a18;
+  --on-fg: #1b1a18;
+  color-scheme: dark;
 }
 
 * {
@@ -145,6 +173,21 @@ button:disabled {
 .counts b {
   font-family: var(--f-mono);
 }
+.side {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.tema {
+  padding: 9px;
+}
+.tema svg {
+  display: block;
+}
+:root:not([data-tema="escuro"]) .tema .sol,
+:root[data-tema="escuro"] .tema .lua {
+  display: none;
+}
 @media (max-width: 720px) {
   .top {
     grid-template-columns: 1fr;
@@ -187,7 +230,7 @@ button:disabled {
 .chip[aria-pressed="true"] {
   border-color: var(--fg);
   background: var(--fg);
-  color: #fff;
+  color: var(--on-fg);
 }
 .dot {
   width: 10px;

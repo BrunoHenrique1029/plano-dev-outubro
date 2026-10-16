@@ -135,7 +135,7 @@
 .gcal:hover,
 .ag-join:hover {
   background: var(--c);
-  color: #fff;
+  color: var(--on-color);
 }
 .ag-empty {
   margin: 8px 0 2px;

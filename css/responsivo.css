@@ -37,6 +37,9 @@
   .more {
     display: none;
   }
+  .side .score {
+    flex: 1;
+  }
   .score {
     display: grid;
     grid-template-columns: auto 1fr;

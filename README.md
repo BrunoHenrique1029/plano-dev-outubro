@@ -15,14 +15,15 @@ No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 
 **Jeito rápido:** dar dois cliques no `index.html`. Tudo funciona, mas o endereço fica `file://...`.
 
-> Os dados ficam guardados no navegador **por endereço**. O que você fizer em `http://127.0.0.1:5500` não aparece em `file://...` e vice-versa. Escolha um jeito e use sempre o mesmo. Para passar de um para o outro, use "Baixar cópia" e "Restaurar cópia".
+> Os dados ficam guardados no navegador **por endereço**. O que você fizer em `http://127.0.0.1:5500` não aparece em `file://...` e vice-versa. Escolha um jeito e use sempre o mesmo.
 
 ## Onde ficam os dados
 
 - **Planos, listas, agendas e relatórios:** no navegador (localStorage), salvos sozinhos a cada mudança.
 - **Imagens e arquivos dos relatórios:** no navegador também (IndexedDB), até 20 MB cada.
 - **Na primeira vez** que o site abre num navegador, o mapa começa como estava no site do Claude (`js/dados-iniciais.js`).
-- **Baixar cópia** (no rodapé) gera um arquivo `.json` com tudo, inclusive as imagens e os arquivos. **Restaurar cópia** coloca esse arquivo de volta, em qualquer navegador ou computador. Faça cópias de vez em quando: limpar os dados do navegador apaga o mapa.
+- **Limpar os dados do navegador apaga o mapa.** Não tem cópia de segurança nesta versão.
+- **Modo claro ou escuro:** o botão com o ícone de lua (ou sol), no topo, troca o modo. A escolha fica guardada no navegador.
 
 Não tem login nem salvamento compartilhado: cada pessoa tem o próprio mapa no próprio navegador. Para as três pessoas mexerem no mesmo mapa ao mesmo tempo, seria preciso um servidor (por exemplo Firebase ou Supabase).
 
@@ -41,8 +42,8 @@ Para publicar num repositório novo:
 Bom saber:
 
 - Qualquer pessoa com o endereço abre o site. No GitHub grátis, o código (com o mapa inicial de `js/dados-iniciais.js`) também fica público.
-- Cada pessoa que abre o site tem o próprio mapa, salvo no navegador dela. Para passar o mapa para alguém, use "Baixar cópia" e "Restaurar cópia".
-- O endereço da internet é outro endereço: o que está salvo no `127.0.0.1:5500` não aparece lá. Use "Baixar cópia" aqui e "Restaurar cópia" lá.
+- Cada pessoa que abre o site tem o próprio mapa, salvo no navegador dela.
+- O endereço da internet é outro endereço: o que está salvo no `127.0.0.1:5500` não aparece lá.
 
 ## Mapa dos arquivos
 
@@ -50,19 +51,20 @@ Bom saber:
 index.html              a página (só a estrutura, sem estilo nem código)
 css/
   fontes.css            as fontes guardadas na pasta
-  base.css              cores, letras, cabeçalho, botões e rodapé
+  base.css              cores (modo claro e escuro), letras, cabeçalho, botões e rodapé
   mapa.css              abas, quadro, planos, listas e ramificações
   agenda.css            agenda no mapa e janela de reunião
   relatorio.css         aba do relatório e editor
   responsivo.css        ajustes para celular, tablet e telas grandes
-js/                     carregados nesta ordem (está no fim do index.html)
-  servicos-locais.js    anexos e downloads
+js/
+  tema.js               modo claro ou escuro (carrega no começo do index.html)
+                        os outros carregam nesta ordem, no fim do index.html:
+  servicos-locais.js    anexos (imagens e arquivos dos relatórios)
   dados-iniciais.js     o mapa como estava no Claude
   estado.js             dados do mapa, salvar e desfazer
   planos.js             criar, conectar, organizar e apagar planos; abas de mapas
   agenda.js             reuniões e link do Google Agenda
   relatorio.js          editor do relatório, imagens e arquivos
-  copia.js              baixar e restaurar cópia
   desenho.js            desenha o mapa, as setas e o zoom
   interacao.js          arrastar, pinça no celular e cliques
   inicio.js             teclado, botões e começo da página
@@ -76,9 +78,10 @@ Os arquivos de `js/` são scripts comuns (não módulos), por isso o site abre a
 ## O que mudou em relação ao site do Claude
 
 - Visual e funções iguais: mapa, sub-planos, listas, agendas, relatórios, busca, desfazer, abas.
-- Salvamento: antes era compartilhado pelo Claude; agora é no navegador, com a cópia de segurança para levar de um lugar para outro.
+- Salvamento: antes era compartilhado pelo Claude; agora é no navegador, sem cópia de segurança.
 - "Editado por": sem login, aparece "Editado por você" no que foi editado neste navegador.
-- Anexos: antes ficavam no Claude; agora ficam no navegador e vão junto na cópia.
+- Anexos: antes ficavam no Claude; agora ficam no navegador.
+- Modo escuro: novo, no botão do topo. O site continua abrindo no modo claro.
 - Assistente (robô): não tem nesta versão. Fora do Claude ele precisaria da API da Anthropic, que é paga à parte da assinatura. Ele continua na versão do mapa dentro do Claude.
 - Google Agenda: igual, os links abrem o evento já preenchido.
 

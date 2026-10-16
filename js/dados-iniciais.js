@@ -1,5 +1,5 @@
 /* O mapa como estava no site do Claude. Só é usado na primeira vez que o site abre em um navegador;
-   depois disso, vale o que está salvo no navegador (ou numa cópia restaurada). */
+   depois disso, vale o que está salvo no navegador. */
 const DADOS_INICIAIS = {
   mapas: [
     {

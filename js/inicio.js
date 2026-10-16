@@ -16,9 +16,8 @@ document.addEventListener("keydown", (e) => {
     closeReport();
     return;
   }
-  if (e.key === "Escape" && (connectFrom || pendingRestore)) {
+  if (e.key === "Escape" && connectFrom) {
     connectFrom = null;
-    pendingRestore = null;
     render();
   }
   if (e.key === "Enter" && t.dataset.mliText) {
@@ -74,7 +73,6 @@ setInterval(() => {
 
 /* ---------- começo ---------- */
 assets = servicos.anexos;
-downloads = servicos.downloads;
 try {
   currentMap = localStorage.getItem("plano-mapa-aba") || "main";
 } catch (e) {}

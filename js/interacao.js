@@ -194,15 +194,8 @@ document.addEventListener("click", (e) => {
   }
   const bn = t.closest("[data-ban]");
   if (bn) {
-    const a = bn.dataset.ban;
-    if (a === "restore-ok") doRestore();
-    else if (a === "restore-no") {
-      pendingRestore = null;
-      render();
-    } else {
-      connectFrom = null;
-      render();
-    }
+    connectFrom = null;
+    render();
     return;
   }
   const mdel = t.closest("[data-mli-del]");

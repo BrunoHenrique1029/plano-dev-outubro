@@ -277,7 +277,7 @@
   top: 0.42em;
   width: 4px;
   height: 9px;
-  border: solid #fff;
+  border: solid var(--on-color);
   border-width: 0 2.5px 2.5px 0;
   transform: rotate(45deg);
   pointer-events: none;
@@ -468,6 +468,61 @@
   border-radius: 3px;
   padding: 0 2px;
 }
+/* no modo escuro, as mesmas cores do texto ficam mais claras e os fundos mais escuros */
+:root[data-tema="escuro"] .ed [data-color="gray"] {
+  color: #9b9b9b;
+}
+:root[data-tema="escuro"] .ed [data-bg="gray"] {
+  background: #2f2f2f;
+}
+:root[data-tema="escuro"] .ed [data-color="brown"] {
+  color: #ba856f;
+}
+:root[data-tema="escuro"] .ed [data-bg="brown"] {
+  background: #4a3228;
+}
+:root[data-tema="escuro"] .ed [data-color="orange"] {
+  color: #c77d48;
+}
+:root[data-tema="escuro"] .ed [data-bg="orange"] {
+  background: #5c3b23;
+}
+:root[data-tema="escuro"] .ed [data-color="yellow"] {
+  color: #ca9849;
+}
+:root[data-tema="escuro"] .ed [data-bg="yellow"] {
+  background: #564328;
+}
+:root[data-tema="escuro"] .ed [data-color="green"] {
+  color: #529e72;
+}
+:root[data-tema="escuro"] .ed [data-bg="green"] {
+  background: #243d30;
+}
+:root[data-tema="escuro"] .ed [data-color="blue"] {
+  color: #5e87c9;
+}
+:root[data-tema="escuro"] .ed [data-bg="blue"] {
+  background: #143a4e;
+}
+:root[data-tema="escuro"] .ed [data-color="purple"] {
+  color: #9d68d3;
+}
+:root[data-tema="escuro"] .ed [data-bg="purple"] {
+  background: #3c2d49;
+}
+:root[data-tema="escuro"] .ed [data-color="pink"] {
+  color: #d15796;
+}
+:root[data-tema="escuro"] .ed [data-bg="pink"] {
+  background: #4e2c3c;
+}
+:root[data-tema="escuro"] .ed [data-color="red"] {
+  color: #df5452;
+}
+:root[data-tema="escuro"] .ed [data-bg="red"] {
+  background: #522e2a;
+}
 .edfoot {
   display: flex;
   flex-wrap: wrap;
@@ -589,7 +644,7 @@
 .linkbar button {
   border: 0;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-color);
   border-radius: 6px;
   padding: 0 12px;
   font-weight: 700;
