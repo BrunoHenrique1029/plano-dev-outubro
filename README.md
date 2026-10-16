@@ -1,6 +1,8 @@
 # Plano Dev Autônomo Outubro
 
-O mapa de planejamento do Dev, da Aquisição e do Conteúdo, agora como um projeto normal de site: HTML, CSS e JavaScript em arquivos separados, pronto para abrir e editar no VS Code. Funciona sem internet (só o assistente precisa de internet).
+O mapa de planejamento do Dev, da Aquisição e do Conteúdo, agora como um projeto normal de site: HTML, CSS e JavaScript em arquivos separados, pronto para abrir e editar no VS Code. Funciona sem internet.
+
+No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 
 ## Como abrir
 
@@ -24,14 +26,23 @@ O mapa de planejamento do Dev, da Aquisição e do Conteúdo, agora como um proj
 
 Não tem login nem salvamento compartilhado: cada pessoa tem o próprio mapa no próprio navegador. Para as três pessoas mexerem no mesmo mapa ao mesmo tempo, seria preciso um servidor (por exemplo Firebase ou Supabase).
 
-## Assistente (robô no canto)
+## Publicar na internet (grátis)
 
-O assistente usa o Claude pela API da Anthropic.
+O site está no GitHub Pages: a cada `git push` na branch `main`, o arquivo de publicação em `.github/workflows/` publica o site de novo, sozinho. O andamento aparece na aba **Actions** do repositório.
 
-1. Crie uma chave em [console.anthropic.com](https://console.anthropic.com/settings/keys). O uso é cobrado por mensagem, na sua conta da Anthropic.
-2. Abra o assistente, clique em **Chave**, cole a chave e salve.
+Para publicar num repositório novo:
 
-A chave fica salva só no seu navegador, nunca nos arquivos do projeto. Se outra pessoa usar o site no computador dela, ela coloca a chave dela.
+1. Crie um repositório **público** no GitHub e envie esta pasta para ele.
+2. No repositório, vá em **Settings > Pages** e, em **Source**, escolha **GitHub Actions**. Isso é feito uma vez só.
+3. O site fica em `https://SEU-USUARIO.github.io/NOME-DO-REPOSITORIO/`.
+
+**Sem GitHub:** crie uma conta grátis no Netlify, abra [app.netlify.com/drop](https://app.netlify.com/drop) e arraste esta pasta para a página.
+
+Bom saber:
+
+- Qualquer pessoa com o endereço abre o site. No GitHub grátis, o código (com o mapa inicial de `js/dados-iniciais.js`) também fica público.
+- Cada pessoa que abre o site tem o próprio mapa, salvo no navegador dela. Para passar o mapa para alguém, use "Baixar cópia" e "Restaurar cópia".
+- O endereço da internet é outro endereço: o que está salvo no `127.0.0.1:5500` não aparece lá. Use "Baixar cópia" aqui e "Restaurar cópia" lá.
 
 ## Mapa dos arquivos
 
@@ -43,11 +54,9 @@ css/
   mapa.css              abas, quadro, planos, listas e ramificações
   agenda.css            agenda no mapa e janela de reunião
   relatorio.css         aba do relatório e editor
-  assistente.css        janela do assistente e da chave
   responsivo.css        ajustes para celular, tablet e telas grandes
 js/                     carregados nesta ordem (está no fim do index.html)
-  vendor/anthropic-sdk.js  biblioteca oficial da Anthropic (gerada, não edite)
-  servicos-locais.js    anexos, downloads, chave e conversa com o Claude
+  servicos-locais.js    anexos e downloads
   dados-iniciais.js     o mapa como estava no Claude
   estado.js             dados do mapa, salvar e desfazer
   planos.js             criar, conectar, organizar e apagar planos; abas de mapas
@@ -56,22 +65,21 @@ js/                     carregados nesta ordem (está no fim do index.html)
   copia.js              baixar e restaurar cópia
   desenho.js            desenha o mapa, as setas e o zoom
   interacao.js          arrastar, pinça no celular e cliques
-  assistente.js         conversa, histórico e modo "Pode alterar"
   inicio.js             teclado, botões e começo da página
 assets/                 ícone e fontes (com as licenças)
 .vscode/                extensões recomendadas e formatação ao salvar
-ferramentas/            entrada para gerar a biblioteca da Anthropic
+.github/workflows/      publicação automática no GitHub Pages
 ```
 
 Os arquivos de `js/` são scripts comuns (não módulos), por isso o site abre até com dois cliques no `index.html`. Eles compartilham as variáveis: um arquivo pode usar as funções dos outros, e a ordem no `index.html` importa.
 
 ## O que mudou em relação ao site do Claude
 
-- Visual e funções iguais: mapa, sub-planos, listas, agendas, relatórios, busca, desfazer, abas, assistente com os dois modos.
+- Visual e funções iguais: mapa, sub-planos, listas, agendas, relatórios, busca, desfazer, abas.
 - Salvamento: antes era compartilhado pelo Claude; agora é no navegador, com a cópia de segurança para levar de um lugar para outro.
 - "Editado por": sem login, aparece "Editado por você" no que foi editado neste navegador.
 - Anexos: antes ficavam no Claude; agora ficam no navegador e vão junto na cópia.
-- Assistente: antes usava a conta do Claude; agora precisa da sua chave da API da Anthropic.
+- Assistente (robô): não tem nesta versão. Fora do Claude ele precisaria da API da Anthropic, que é paga à parte da assinatura. Ele continua na versão do mapa dentro do Claude.
 - Google Agenda: igual, os links abrem o evento já preenchido.
 
 ## Comandos (opcional, precisa do Node.js)
@@ -81,4 +89,3 @@ Nada disso é preciso para usar o site.
 - `npm install`: instala as ferramentas.
 - `npm run dev`: abre o site em `http://127.0.0.1:5500` sem o Live Server (mesmo endereço, então os mesmos dados).
 - `npm run formatar`: arruma a formatação de todos os arquivos com o Prettier.
-- `npm run vendor`: gera de novo `js/vendor/anthropic-sdk.js` a partir da biblioteca oficial.

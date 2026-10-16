@@ -26,7 +26,7 @@ async function repWrite(patch) {
 }
 
 /* ---------- editor do relatório (parecido com uma página do Notion) ----------
-   Guarda HTML limpo em `reportHtml`, o texto puro em `report` (busca e assistente) e os anexos usados em `files`. */
+   Guarda HTML limpo em `reportHtml`, o texto puro em `report` (busca) e os anexos usados em `files`. */
 const ED = () => $("#rep-ed");
 const PALETTE = {
   gray: "#787774",

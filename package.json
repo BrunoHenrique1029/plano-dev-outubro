@@ -5,12 +5,9 @@
   "description": "Mapa de planejamento do Dev, da Aquisição e do Conteúdo",
   "scripts": {
     "dev": "npx --yes serve -l tcp://127.0.0.1:5500 .",
-    "formatar": "prettier --write .",
-    "vendor": "esbuild ferramentas/sdk-entrada.mjs --bundle --minify --format=iife --target=es2020 --outfile=js/vendor/anthropic-sdk.js"
+    "formatar": "prettier --write ."
   },
   "devDependencies": {
-    "@anthropic-ai/sdk": "0.135.0",
-    "esbuild": "0.25.12",
     "prettier": "3.9.10"
   }
 }

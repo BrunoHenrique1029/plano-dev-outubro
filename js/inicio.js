@@ -8,20 +8,12 @@ document.addEventListener("keydown", (e) => {
     undo();
     return;
   }
-  if (e.key === "Escape" && !$("#key").hidden) {
-    closeKey();
-    return;
-  }
   if (e.key === "Escape" && mtg) {
     closeMeeting();
     return;
   }
   if (e.key === "Escape" && reportId) {
     closeReport();
-    return;
-  }
-  if (e.key === "Escape" && !$("#chat").hidden && !typing) {
-    openChat(false);
     return;
   }
   if (e.key === "Escape" && (connectFrom || pendingRestore)) {
@@ -76,22 +68,6 @@ $("#z-out").onclick = () => zoom(1 / 1.2);
 $("#z-fit").onclick = () => fit(true);
 $("#z-tidy").onclick = tidy;
 if (document.fonts) document.fonts.ready.then(() => drawEdges());
-/* quando o quadro muda de tamanho (girar o celular, redimensionar a janela, relatório preso ao lado
-   na ultrawide), o mapa continua centrado no mesmo ponto em vez de escorregar para um canto */
-if (window.ResizeObserver) {
-  let lastW = 0,
-    lastH = 0;
-  new ResizeObserver(([e]) => {
-    const { width: w, height: h } = e.contentRect;
-    if (lastW && lastH && (w !== lastW || h !== lastH)) {
-      view.tx += (w - lastW) / 2;
-      view.ty += (h - lastH) / 2;
-      applyView();
-    }
-    lastW = w;
-    lastH = h;
-  }).observe($("#board"));
-}
 setInterval(() => {
   if (reportId) $("#rep-edited").textContent = editedLine(get(reportId) || {});
 }, 30000);
