@@ -22,7 +22,8 @@ let who = "all",
 let view = { tx: 40, ty: 40, s: 1 },
   fitted = {};
 let assets = null;
-const myId = "local"; // sem login: neste navegador, quem edita é sempre "você"
+let myId = "local", // sem login, quem edita neste navegador é sempre "você"; com a nuvem, é a conta Google
+  meuNome = "";
 let pointerDown = false,
   pendingRender = false,
   drag = null;
@@ -108,7 +109,8 @@ function when(iso) {
 }
 function editedLine(n) {
   if (!n.editedAt) return "";
-  return n.editedBy === myId ? `Editado por você · ${when(n.editedAt)}` : `Editado ${when(n.editedAt)}`;
+  const nome = n.editedBy === myId ? "você" : n.editedByName;
+  return nome ? `Editado por ${nome} · ${when(n.editedAt)}` : `Editado ${when(n.editedAt)}`;
 }
 
 /* ---------- salvar e desfazer ---------- */
@@ -160,20 +162,23 @@ async function write(coll, id, data, opt = {}) {
     }
     $("#undo").disabled = false;
   }
+  let next = null;
   if (data === null) {
     if (i >= 0) list.splice(i, 1);
   } else {
-    let next = opt.replace ? { ...data, id } : { ...(before || {}), ...data, id };
+    next = opt.replace ? { ...data, id } : { ...(before || {}), ...data, id };
     const onlyPos = Object.keys(data).every((k) => k === "x" || k === "y");
     if (coll === "nodes" && !opt.replace && !onlyPos) {
       next.editedAt = new Date().toISOString();
       if (myId) next.editedBy = myId;
+      if (meuNome) next.editedByName = meuNome;
     }
     if (i >= 0) list[i] = next;
     else list.push(next);
   }
   if (!opt.silent) render();
-  if (saveLocal()) setSave("Salvo neste navegador", "ok");
+  if (nuvem) nuvem.gravar(coll, id, data, opt, before, next);
+  else if (saveLocal()) setSave("Salvo neste navegador", "ok");
   else setSave("Não foi possível salvar neste navegador. O espaço pode ter acabado.", "err");
 }
 async function undo() {

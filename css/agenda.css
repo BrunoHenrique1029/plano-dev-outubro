@@ -176,7 +176,8 @@ a.btn {
 .modal[hidden] {
   display: none;
 }
-.modal form {
+.modal form,
+.modal .caixa {
   width: min(460px, 100%);
   max-height: calc(100dvh - 32px);
   overflow: auto;

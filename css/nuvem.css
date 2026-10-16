@@ -1,0 +1,35 @@
+/* Entrada com a conta Google e conta no rodapé (só quando a nuvem está ligada, em js/nuvem.js) */
+.entrada {
+  z-index: 90;
+  background: var(--bg);
+}
+.entrada .caixa {
+  gap: 14px;
+  padding: 22px 22px 20px;
+}
+.entrada .caixa p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.entrada .caixa .err {
+  font-size: 14px;
+}
+.entrada .caixa .btn {
+  justify-content: center;
+  padding-block: 11px;
+}
+.conta b {
+  font-weight: 600;
+  color: var(--fg);
+}
+.conta button {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

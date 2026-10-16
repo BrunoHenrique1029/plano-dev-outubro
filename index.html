@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/mapa.css" />
     <link rel="stylesheet" href="css/agenda.css" />
     <link rel="stylesheet" href="css/relatorio.css" />
+    <link rel="stylesheet" href="css/nuvem.css" />
     <link rel="stylesheet" href="css/responsivo.css" />
     <!-- antes da página aparecer, para ela já abrir no modo escolhido -->
     <script src="js/tema.js"></script>
@@ -258,15 +259,34 @@
         </form>
       </div>
 
+      <div class="modal entrada" id="entrada" hidden>
+        <div class="caixa" role="dialog" aria-modal="true" aria-labelledby="entrada-h">
+          <div>
+            <div class="k">Plano Dev Autônomo Outubro</div>
+            <h3 id="entrada-h">Entrar no mapa</h3>
+          </div>
+          <p id="entrada-txt">Abrindo o mapa…</p>
+          <p class="err" id="entrada-err" hidden></p>
+          <button class="btn primary" id="entrar-google" type="button" hidden>Entrar com Google</button>
+          <button class="btn" id="entrada-outra" type="button" hidden>Entrar com outra conta</button>
+        </div>
+      </div>
+
       <footer class="foot">
         <span class="save" id="save"><i></i><span id="savetxt">Carregando…</span></span>
+        <span class="conta" id="conta" hidden
+          >Conectado como <b id="conta-nome"></b> · <button id="sair" type="button">Sair</button></span
+        >
       </footer>
     </div>
 
     <!-- A ordem importa: cada arquivo usa o que os anteriores criaram. -->
     <script src="js/servicos-locais.js"></script>
+    <script src="js/nuvem-config.js"></script>
+    <script src="js/vendor/firebase.js"></script>
     <script src="js/dados-iniciais.js"></script>
     <script src="js/estado.js"></script>
+    <script src="js/nuvem.js"></script>
     <script src="js/planos.js"></script>
     <script src="js/agenda.js"></script>
     <script src="js/relatorio.js"></script>

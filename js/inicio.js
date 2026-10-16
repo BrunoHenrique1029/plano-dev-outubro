@@ -72,22 +72,29 @@ setInterval(() => {
 }, 30000);
 
 /* ---------- começo ---------- */
-assets = servicos.anexos;
 try {
   currentMap = localStorage.getItem("plano-mapa-aba") || "main";
 } catch (e) {}
-/* na primeira vez neste navegador, o mapa começa como estava no Claude (js/dados-iniciais.js) */
-let firstRun = false;
-try {
-  firstRun = localStorage.getItem("plano-mapa") === null;
-} catch (e) {}
-loadLocal();
-if (firstRun && typeof DADOS_INICIAIS !== "undefined") {
-  nodes = clone(DADOS_INICIAIS.planos);
-  maps = clone(DADOS_INICIAIS.mapas);
-  saveLocal();
+if (nuvem) {
+  /* com a nuvem (js/nuvem.js): o mapa aparece depois do login com Google */
+  assets = nuvem.anexos;
+  render();
+  nuvem.iniciar();
+} else {
+  assets = servicos.anexos;
+  /* na primeira vez neste navegador, o mapa começa como estava no Claude (js/dados-iniciais.js) */
+  let firstRun = false;
+  try {
+    firstRun = localStorage.getItem("plano-mapa") === null;
+  } catch (e) {}
+  loadLocal();
+  if (firstRun && typeof DADOS_INICIAIS !== "undefined") {
+    nodes = clone(DADOS_INICIAIS.planos);
+    maps = clone(DADOS_INICIAIS.mapas);
+    saveLocal();
+  }
+  render();
+  fitted[currentMap] = true;
+  fit();
+  setSave("Salvo neste navegador", "ok");
 }
-render();
-fitted[currentMap] = true;
-fit();
-setSave("Salvo neste navegador", "ok");

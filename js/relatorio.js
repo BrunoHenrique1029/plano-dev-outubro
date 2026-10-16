@@ -219,15 +219,15 @@ function collectFiles(root, old) {
   });
   return out;
 }
-/* os anexos ficam guardados neste navegador (js/servicos-locais.js); aqui as imagens ganham o endereço para aparecer */
+/* os anexos ficam neste navegador (js/servicos-locais.js) ou na nuvem (js/nuvem.js); aqui as imagens ganham o endereço para aparecer */
 function showAssets(root) {
   if (!assets) return;
-  root.querySelectorAll("img[data-asset]:not([src])").forEach(async (im) => {
+  root.querySelectorAll("img[data-asset]:not([src]):not(.missing)").forEach(async (im) => {
     const u = await assets.url(im.dataset.asset).catch(() => null);
     if (u) im.src = u;
     else {
       im.classList.add("missing");
-      im.alt = `${im.dataset.name || "Imagem"} (não está guardada neste navegador)`;
+      im.alt = `${im.dataset.name || "Imagem"} (${assets.falta || "não está guardada neste navegador"})`;
     }
   });
 }
@@ -236,7 +236,8 @@ const VIEW_TYPES = /^(image\/(png|jpe?g|gif|webp|avif|bmp)|application\/pdf|vide
 async function openAsset(id, name, type) {
   const u = assets ? await assets.url(id).catch(() => null) : null;
   if (!u) {
-    $("#file-status").textContent = `${name || "Arquivo"}: não está guardado neste navegador.`;
+    $("#file-status").textContent =
+      `${name || "Arquivo"}: ${assets?.falta || "não está guardado neste navegador"}.`;
     return;
   }
   const a = document.createElement("a");
@@ -734,7 +735,7 @@ function mdShortcut(e) {
 /* imagens e arquivos dentro do texto */
 const TEXT_TYPES = { csv: "text/csv", md: "text/markdown", json: "application/json", txt: "text/plain" };
 const UPLOAD_ERR = {
-  too_large: "o arquivo é grande demais (até 20 MB)",
+  too_large: () => `o arquivo é grande demais (até ${assets?.limiteMB || 20} MB)`,
   unsupported_type: "esse tipo de arquivo não é aceito (use imagem, PDF, vídeo ou texto)",
   quota_or_state: "o espaço de anexos acabou",
   rate_limited: "muitos envios seguidos, espere um pouco",
@@ -777,7 +778,9 @@ async function insertFiles(list) {
     } catch (e) {
       ph.remove();
       edChanged();
-      $("#file-status").textContent = `${f.name}: ${UPLOAD_ERR[e?.code] || "não foi possível enviar agora"}.`;
+      const msg = UPLOAD_ERR[e?.code];
+      $("#file-status").textContent =
+        `${f.name}: ${(typeof msg === "function" ? msg() : msg) || "não foi possível enviar agora"}.`;
     }
   }
 }
@@ -1104,6 +1107,13 @@ function fillDrawer() {
   document
     .querySelectorAll('#edbar [data-cmd="image"], #edbar [data-cmd="file"]')
     .forEach((b) => (b.hidden = !assets));
+}
+/* chegou mudança de outro aparelho: atualiza o relatório aberto, se ninguém está escrevendo nele agora */
+function refreshEditorFromData() {
+  if (!reportId) return;
+  fillDrawer();
+  if (!reportId || repTimer || document.activeElement === ED()) return;
+  if (canon(docHtml(repData())) !== loadedHtml) loadEditor();
 }
 function closeReport() {
   flushReport();

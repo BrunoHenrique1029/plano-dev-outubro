@@ -1,5 +1,6 @@
 /* Serviços locais. Dentro do Claude, a página usava um serviço pronto da plataforma para guardar os anexos.
-   Fora dele, esta versão faz o mesmo neste navegador: imagens e arquivos ficam guardados no IndexedDB. */
+   Fora dele, esta versão faz o mesmo neste navegador: imagens e arquivos ficam guardados no IndexedDB.
+   Com a nuvem ligada (js/nuvem.js), este banco vira a cópia local dos anexos, para abrir rápido e sem internet. */
 const servicos = (() => {
   /* ---------- anexos (IndexedDB) ---------- */
   const BANCO = "plano-dev-anexos",
@@ -33,15 +34,16 @@ const servicos = (() => {
     typeof indexedDB === "undefined"
       ? null
       : {
+          limiteMB: LIMITE / 1024 / 1024,
           /* guarda o arquivo e devolve o id que o relatório usa */
-          async upload(arquivo, opcoes) {
-            if (arquivo.size > LIMITE) throw { code: "too_large" };
+          async upload(arquivo, opcoes, extra) {
+            if (arquivo.size > (extra?.limite || LIMITE)) throw { code: "too_large" };
             const id = novoId(),
               type = opcoes?.type || arquivo.type || "application/octet-stream";
             const blob = new Blob([arquivo], { type });
             try {
               await usar("readwrite", (s) =>
-                s.put({ id, blob, type, name: arquivo.name || "", size: arquivo.size }),
+                s.put({ id, blob, type, name: arquivo.name || "", size: arquivo.size, ...extra?.campos }),
               );
             } catch (e) {
               throw { code: "quota_or_state" };
@@ -62,6 +64,10 @@ const servicos = (() => {
             urls.set(id, u);
             return u;
           },
+          /* usados pela nuvem: ler e gravar o registro inteiro, e listar o que está guardado */
+          ler: (id) => usar("readonly", (s) => s.get(id)),
+          guardar: (registro) => usar("readwrite", (s) => s.put(registro)),
+          todos: () => usar("readonly", (s) => s.getAll()),
         };
 
   return { anexos };

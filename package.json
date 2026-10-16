@@ -5,9 +5,12 @@
   "description": "Mapa de planejamento do Dev, da Aquisição e do Conteúdo",
   "scripts": {
     "dev": "npx --yes serve -l tcp://127.0.0.1:5500 .",
-    "formatar": "prettier --write ."
+    "formatar": "prettier --write .",
+    "vendor": "esbuild ferramentas/firebase-entrada.mjs --bundle --minify --format=iife --global-name=FB --target=es2020 --legal-comments=eof \"--banner:js=/* Firebase JS SDK (Apache-2.0), só as partes que o site usa. Gerado por npm run vendor. */\" --outfile=js/vendor/firebase.js"
   },
   "devDependencies": {
+    "esbuild": "0.25.12",
+    "firebase": "13.0.0",
     "prettier": "3.9.10"
   }
 }

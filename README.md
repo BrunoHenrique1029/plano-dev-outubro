@@ -1,6 +1,6 @@
 # Plano Dev Autônomo Outubro
 
-O mapa de planejamento do Dev, da Aquisição e do Conteúdo, agora como um projeto normal de site: HTML, CSS e JavaScript em arquivos separados, pronto para abrir e editar no VS Code. Funciona sem internet.
+O mapa de planejamento do Dev, da Aquisição e do Conteúdo, agora como um projeto normal de site: HTML, CSS e JavaScript em arquivos separados, pronto para abrir e editar no VS Code. Com a nuvem ligada, o mapa é o mesmo em todos os aparelhos.
 
 No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 
@@ -13,19 +13,49 @@ No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 3. Clique em **Go Live**, na barra azul lá embaixo. O site abre no navegador em `http://127.0.0.1:5500`.
 4. Cada vez que você salvar um arquivo, a página recarrega sozinha.
 
-**Jeito rápido:** dar dois cliques no `index.html`. Tudo funciona, mas o endereço fica `file://...`.
-
-> Os dados ficam guardados no navegador **por endereço**. O que você fizer em `http://127.0.0.1:5500` não aparece em `file://...` e vice-versa. Escolha um jeito e use sempre o mesmo.
+**Jeito rápido:** dar dois cliques no `index.html`. O endereço fica `file://...` e, nesse jeito, o site não usa a nuvem: salva só no navegador.
 
 ## Onde ficam os dados
 
-- **Planos, listas, agendas e relatórios:** no navegador (localStorage), salvos sozinhos a cada mudança.
-- **Imagens e arquivos dos relatórios:** no navegador também (IndexedDB), até 20 MB cada.
-- **Na primeira vez** que o site abre num navegador, o mapa começa como estava no site do Claude (`js/dados-iniciais.js`).
-- **Limpar os dados do navegador apaga o mapa.** Não tem cópia de segurança nesta versão.
-- **Modo claro ou escuro:** o botão com o ícone de lua (ou sol), no topo, troca o modo. A escolha fica guardada no navegador.
+**Com a nuvem ligada** (o `js/nuvem-config.js` preenchido, que é como está no site publicado):
 
-Não tem login nem salvamento compartilhado: cada pessoa tem o próprio mapa no próprio navegador. Para as três pessoas mexerem no mesmo mapa ao mesmo tempo, seria preciso um servidor (por exemplo Firebase ou Supabase).
+- Cada pessoa entra com a conta Google. Só os e-mails liberados nas regras do Firestore veem e editam o mapa.
+- **Planos, listas, agendas e relatórios** ficam no Firestore (Firebase, plano grátis Spark). O que alguém muda aparece na hora nos outros aparelhos abertos.
+- **Sem internet** o site continua funcionando com a cópia guardada no aparelho. As mudanças sobem sozinhas quando a conexão volta.
+- **Imagens e arquivos** dos relatórios vão para o Firestore em partes de 900 KB, até 10 MB cada. Cada aparelho guarda uma cópia (IndexedDB) depois de abrir.
+- **"Editado por"** mostra o primeiro nome da conta Google de quem mudou.
+- **Na primeira vez** que alguém entra e a nuvem está vazia, o mapa daquele navegador vai para a nuvem (ou, se ele não tiver nada, o mapa como estava no Claude, de `js/dados-iniciais.js`). A cópia antiga continua guardada no navegador.
+
+**Sem a nuvem** (`NUVEM_CONFIG = null` ou aberto pelo `file://`): tudo fica só no navegador (localStorage e IndexedDB), como nas versões anteriores, e cada navegador tem o próprio mapa. Limpar os dados do navegador apaga o mapa.
+
+**Modo claro ou escuro:** o botão com o ícone de lua (ou sol), no topo, troca o modo. A escolha fica guardada no navegador.
+
+## Ligar a nuvem (Firebase)
+
+1. Crie um projeto grátis em [console.firebase.google.com](https://console.firebase.google.com) e registre um app **Web** (ícone `</>`).
+2. Copie o `firebaseConfig` que aparecer para `js/nuvem-config.js`, no lugar do `null`.
+3. Em **Authentication**, ative o login com **Google** e, em **Configurações > Domínios autorizados**, adicione o endereço do site (por exemplo `brunohenrique1029.github.io`). Para testar no computador com o Live Server, abra pelo endereço `http://localhost:5500`, que o Firebase já deixa liberado.
+4. Crie o **Firestore Database** (edição Standard, modo de produção) e, na aba **Regras**, cole:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function permitido() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in ['seu-email@gmail.com'];
+    }
+    match /{document=**} {
+      allow read, write: if permitido();
+    }
+  }
+}
+```
+
+Troque `seu-email@gmail.com` pelos e-mails liberados, em letras minúsculas e separados por vírgula. Para liberar mais alguém depois, é só mudar essa lista e clicar em **Publicar**.
+
+Os dados do `firebaseConfig` não são senha e podem ficar no repositório público. Quem protege o mapa são as regras.
 
 ## Publicar na internet (grátis)
 
@@ -41,9 +71,8 @@ Para publicar num repositório novo:
 
 Bom saber:
 
-- Qualquer pessoa com o endereço abre o site. No GitHub grátis, o código (com o mapa inicial de `js/dados-iniciais.js`) também fica público.
-- Cada pessoa que abre o site tem o próprio mapa, salvo no navegador dela.
-- O endereço da internet é outro endereço: o que está salvo no `127.0.0.1:5500` não aparece lá.
+- Qualquer pessoa com o endereço abre o site, mas só vê o mapa quem entra com um e-mail liberado. No GitHub grátis, o código (com o mapa inicial de `js/dados-iniciais.js`) fica público.
+- Depois de publicar uma mudança, aperte **Ctrl+F5** no site para o navegador pegar os arquivos novos.
 
 ## Mapa dos arquivos
 
@@ -55,13 +84,17 @@ css/
   mapa.css              abas, quadro, planos, listas e ramificações
   agenda.css            agenda no mapa e janela de reunião
   relatorio.css         aba do relatório e editor
+  nuvem.css             tela de entrada com Google e conta no rodapé
   responsivo.css        ajustes para celular, tablet e telas grandes
 js/
   tema.js               modo claro ou escuro (carrega no começo do index.html)
                         os outros carregam nesta ordem, no fim do index.html:
-  servicos-locais.js    anexos (imagens e arquivos dos relatórios)
+  servicos-locais.js    anexos guardados no navegador (imagens e arquivos dos relatórios)
+  nuvem-config.js       dados do projeto no Firebase (null = sem nuvem)
+  vendor/firebase.js    o Firebase (login e Firestore), já pronto
   dados-iniciais.js     o mapa como estava no Claude
   estado.js             dados do mapa, salvar e desfazer
+  nuvem.js              login com Google, salvar e receber mudanças, anexos na nuvem
   planos.js             criar, conectar, organizar e apagar planos; abas de mapas
   agenda.js             reuniões e link do Google Agenda
   relatorio.js          editor do relatório, imagens e arquivos
@@ -69,6 +102,7 @@ js/
   interacao.js          arrastar, pinça no celular e cliques
   inicio.js             teclado, botões e começo da página
 assets/                 ícone e fontes (com as licenças)
+ferramentas/            de onde sai o js/vendor/firebase.js (npm run vendor)
 .vscode/                extensões recomendadas e formatação ao salvar
 .github/workflows/      publicação automática no GitHub Pages
 ```
@@ -78,9 +112,9 @@ Os arquivos de `js/` são scripts comuns (não módulos), por isso o site abre a
 ## O que mudou em relação ao site do Claude
 
 - Visual e funções iguais: mapa, sub-planos, listas, agendas, relatórios, busca, desfazer, abas.
-- Salvamento: antes era compartilhado pelo Claude; agora é no navegador, sem cópia de segurança.
-- "Editado por": sem login, aparece "Editado por você" no que foi editado neste navegador.
-- Anexos: antes ficavam no Claude; agora ficam no navegador.
+- Salvamento: antes era compartilhado pelo Claude; agora é compartilhado pelo Firebase, com login do Google.
+- "Editado por": mostra o primeiro nome da conta Google de quem editou ("você" quando foi você).
+- Anexos: antes ficavam no Claude; agora ficam no Firebase, até 10 MB cada.
 - Modo escuro: novo, no botão do topo. O site continua abrindo no modo claro.
 - Assistente (robô): não tem nesta versão. Fora do Claude ele precisaria da API da Anthropic, que é paga à parte da assinatura. Ele continua na versão do mapa dentro do Claude.
 - Google Agenda: igual, os links abrem o evento já preenchido.
@@ -92,3 +126,4 @@ Nada disso é preciso para usar o site.
 - `npm install`: instala as ferramentas.
 - `npm run dev`: abre o site em `http://127.0.0.1:5500` sem o Live Server (mesmo endereço, então os mesmos dados).
 - `npm run formatar`: arruma a formatação de todos os arquivos com o Prettier.
+- `npm run vendor`: monta de novo o `js/vendor/firebase.js` (só se quiser atualizar o Firebase).
