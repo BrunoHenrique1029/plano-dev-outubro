@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Plano Dev Autônomo Outubro</title>
+    <meta name="description" content="Mapa de planejamento do Dev, da Aquisição e do Conteúdo." />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#F5F4F1" />
+    <link rel="icon" href="assets/icone.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/fontes.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/mapa.css" />
+    <link rel="stylesheet" href="css/agenda.css" />
+    <link rel="stylesheet" href="css/relatorio.css" />
+    <link rel="stylesheet" href="css/assistente.css" />
+    <link rel="stylesheet" href="css/responsivo.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="top">
+        <div>
+          <h1>Plano Dev Autônomo Outubro</h1>
+          <p class="lead">
+            Arraste os planos para onde quiser e clique em um plano para ver as opções.<span class="more">
+              Use "+ Nova lista" para colocar uma lista com marcações no mapa e "+ Nova agenda" para marcar
+              reuniões. No ícone de documento você abre o relatório, com anotações e anexos. O botão do robô,
+              no canto, abre o assistente do projeto.</span
+            >
+          </p>
+        </div>
+        <div class="score" aria-live="polite">
+          <div class="big mono" id="pct">0%</div>
+          <div class="bar"><i id="pctbar"></i></div>
+          <small id="pcttext">Nenhum plano ainda</small>
+          <div class="counts" id="counts"></div>
+        </div>
+      </header>
+
+      <div class="controls">
+        <div class="grp">
+          <button class="btn primary" id="add-main" aria-label="Novo plano">
+            + <span class="hide-xs">Novo </span>plano
+          </button>
+          <button class="btn" id="add-list" aria-label="Nova lista">
+            + <span class="hide-xs">Nova </span>lista
+          </button>
+          <button class="btn" id="add-agenda" aria-label="Nova agenda">
+            + <span class="hide-xs">Nova </span>agenda
+          </button>
+          <button class="btn" id="undo" disabled title="Desfazer (Ctrl+Z)" aria-label="Desfazer">
+            ↶<span class="hide-sm">Desfazer</span>
+          </button>
+          <label class="search"
+            ><span aria-hidden="true">⌕</span
+            ><input id="q" type="search" placeholder="Buscar no mapa" aria-label="Buscar no mapa"
+          /></label>
+        </div>
+        <div class="grp" role="group" aria-label="Destacar pessoa">
+          <button class="chip" data-who="all" aria-pressed="true">Todos</button>
+          <button class="chip" data-who="D" aria-pressed="false">
+            <span class="dot" style="background: var(--p-D)"></span>Dev
+          </button>
+          <button class="chip" data-who="A" aria-pressed="false">
+            <span class="dot" style="background: var(--p-A)"></span>Aquisição
+          </button>
+          <button class="chip" data-who="C" aria-pressed="false">
+            <span class="dot" style="background: var(--p-C)"></span>Conteúdo
+          </button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <nav class="tabs" id="tabs" aria-label="Mapas"></nav>
+        <div class="board" id="board">
+          <div class="world" id="world"></div>
+          <div class="empty" id="empty" hidden>
+            <b>Este mapa está vazio</b><span>Crie o primeiro plano e depois arraste para onde quiser.</span
+            ><button class="btn primary" id="add-first">+ Criar o primeiro plano</button>
+          </div>
+          <div class="banner" id="banner" hidden></div>
+          <div class="zoom">
+            <button id="z-out" aria-label="Diminuir zoom">−</button>
+            <button id="z-in" aria-label="Aumentar zoom">+</button>
+            <button id="z-fit">Ver tudo</button>
+            <button id="z-tidy">Organizar</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="drawer" id="drawer" hidden aria-label="Relatório">
+        <header>
+          <div>
+            <div class="k">Relatório · <span id="rep-who"></span></div>
+            <h2 id="rep-title"></h2>
+          </div>
+          <span class="hbtns"
+            ><button class="btn" id="rep-wide">Tela cheia</button
+            ><button class="btn" id="rep-close">Fechar</button></span
+          >
+        </header>
+        <div class="edbar" id="edbar" role="toolbar" aria-label="Formatação">
+          <select id="ed-block" aria-label="Tipo de bloco">
+            <option value="p">Texto</option>
+            <option value="h1">Título 1</option>
+            <option value="h2">Título 2</option>
+            <option value="h3">Título 3</option>
+            <option value="ul">Lista</option>
+            <option value="ol">Lista numerada</option>
+            <option value="todo">Tarefas</option>
+            <option value="blockquote">Citação</option>
+            <option value="callout">Destaque</option>
+            <option value="pre">Código</option>
+          </select>
+          <span class="sep"></span>
+          <button data-cmd="b" title="Negrito (Ctrl+B)" aria-pressed="false"><b>B</b></button>
+          <button data-cmd="i" title="Itálico (Ctrl+I)" aria-pressed="false"><i>I</i></button>
+          <button data-cmd="u" title="Sublinhado (Ctrl+U)" aria-pressed="false"><u>U</u></button>
+          <button data-cmd="s" title="Riscado" aria-pressed="false"><s>S</s></button>
+          <button data-cmd="code" title="Código (Ctrl+E)" class="mono">&lt;/&gt;</button>
+          <button data-cmd="link" title="Link (Ctrl+K)">🔗</button>
+          <button data-cmd="color" title="Cor do texto e fundo"><span class="acolor">A</span></button>
+          <span class="sep"></span>
+          <button data-cmd="todo" title="Lista de tarefas">☑</button>
+          <button data-cmd="table" title="Tabela">▦</button>
+          <button data-cmd="hr" title="Divisor">—</button>
+          <button data-cmd="image" title="Imagem">🖼<span class="hide-xs"> Imagem</span></button>
+          <button data-cmd="file" title="Anexar arquivo">📎<span class="hide-xs"> Arquivo</span></button>
+          <span class="sep"></span>
+          <button data-cmd="undo" title="Desfazer no texto (Ctrl+Z)">↶</button>
+          <button data-cmd="redo" title="Refazer no texto (Ctrl+Shift+Z)">↷</button>
+        </div>
+        <div
+          class="ed"
+          id="rep-ed"
+          contenteditable="true"
+          spellcheck="true"
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Texto do relatório"
+          data-ph="Escreva aqui. Digite / para ver os blocos: títulos, listas, tarefas, tabela, imagem…"
+        ></div>
+        <div class="edfoot">
+          <small id="rep-status"></small><small id="file-status"></small><small id="rep-edited"></small>
+        </div>
+        <input type="file" id="file-in" multiple hidden /><input
+          type="file"
+          id="img-in"
+          accept="image/*"
+          multiple
+          hidden
+        />
+      </aside>
+      <div class="pop slash" id="slash" hidden></div>
+      <div class="pop colors" id="colors" hidden></div>
+      <form class="pop linkbar" id="linkbar" hidden>
+        <input
+          id="link-in"
+          type="text"
+          placeholder="Cole o link (vazio remove)"
+          aria-label="Endereço do link"
+        /><button type="submit">OK</button>
+      </form>
+      <div class="pop imgbar" id="imgbar" hidden>
+        <button data-size="s">Pequena</button><button data-size="m">Média</button
+        ><button data-size="l">Inteira</button><button data-img="open">Abrir</button
+        ><button data-img="rm" class="danger">Remover</button>
+      </div>
+
+      <button
+        class="botbtn"
+        id="bot"
+        aria-expanded="false"
+        aria-controls="chat"
+        title="Assistente do projeto"
+        aria-label="Abrir assistente do projeto"
+      >
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path d="M12 2v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <circle cx="12" cy="2" r="1.3" fill="currentColor" />
+          <rect
+            x="4"
+            y="6"
+            width="16"
+            height="12"
+            rx="4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <circle cx="9" cy="12" r="1.6" fill="currentColor" />
+          <circle cx="15" cy="12" r="1.6" fill="currentColor" />
+          <path d="M9 21h6M2 11v3M22 11v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+      <div class="modal" id="mtg" hidden>
+        <form id="mtg-form" role="dialog" aria-modal="true" aria-labelledby="mtg-h" novalidate>
+          <div>
+            <div class="k" id="mtg-k">Agenda</div>
+            <h3 id="mtg-h">Nova reunião</h3>
+          </div>
+          <label
+            >Assunto<input name="title" maxlength="140" placeholder="Assunto da reunião" autocomplete="off"
+          /></label>
+          <label
+            >Com quem<input
+              name="with"
+              maxlength="140"
+              placeholder="Nome do cliente ou da empresa"
+              autocomplete="off"
+          /></label>
+          <div class="three">
+            <label>Data<input name="date" type="date" required /></label>
+            <label>Hora<input name="time" type="time" /></label>
+            <label
+              >Duração<select name="dur">
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="45">45 min</option>
+                <option value="60" selected>1 h</option>
+                <option value="90">1h30</option>
+                <option value="120">2 h</option>
+                <option value="180">3 h</option>
+              </select></label
+            >
+          </div>
+          <label
+            >Link ou local<input
+              name="link"
+              maxlength="400"
+              placeholder="Link do Meet, Zoom ou endereço"
+              autocomplete="off"
+          /></label>
+          <p class="hint">Sem hora, a reunião fica como dia inteiro.</p>
+          <p class="err" id="mtg-err" hidden></p>
+          <div class="acts">
+            <button type="button" class="btn danger-t left" id="mtg-del" hidden>Apagar</button>
+            <button type="button" class="btn" id="mtg-cancel">Cancelar</button>
+            <a class="btn" id="mtg-gcal" href="https://calendar.google.com/" target="_blank" rel="noopener"
+              ><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                <rect
+                  x="3.5"
+                  y="5"
+                  width="17"
+                  height="15.5"
+                  rx="1.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                />
+                <path
+                  d="M8 3v4M16 3v4M12 11v6M9 14h6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                /></svg
+              >Salvar e abrir no Google Agenda</a
+            >
+            <button type="submit" class="btn primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal" id="key" hidden>
+        <form id="key-form" role="dialog" aria-modal="true" aria-labelledby="key-h" novalidate>
+          <div>
+            <div class="k">Assistente</div>
+            <h3 id="key-h">Chave da API</h3>
+          </div>
+          <p class="hint">
+            O assistente usa o Claude pela API da Anthropic. Crie uma chave em
+            <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener"
+              >console.anthropic.com</a
+            >
+            e cole aqui. O uso é cobrado na sua conta da Anthropic.
+          </p>
+          <label
+            >Chave<input
+              name="key"
+              type="password"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="sk-ant-…"
+              aria-describedby="key-state"
+          /></label>
+          <p class="hint" id="key-state"></p>
+          <p class="err" id="key-err" hidden></p>
+          <div class="acts">
+            <button type="button" class="btn danger-t" id="key-del" hidden>Remover chave</button>
+            <button type="button" class="btn" id="key-cancel">Cancelar</button>
+            <button type="submit" class="btn primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+
+      <section class="chat" id="chat" hidden aria-label="Assistente do projeto">
+        <header>
+          <b>Assistente</b
+          ><span style="white-space: nowrap"
+            ><button class="x" id="chat-hist" aria-pressed="false">Histórico</button
+            ><button class="x" id="chat-clear" title="Começar uma conversa nova">Nova</button
+            ><button class="x" id="chat-key" title="Chave da API da Anthropic">Chave</button
+            ><button class="x" id="chat-close">Fechar</button></span
+          >
+        </header>
+        <div class="modes" role="group" aria-label="Modo do assistente">
+          <button id="mode-suggest" aria-pressed="true">
+            <b>Só sugestões</b><span>Lê o mapa e os relatórios e diz a melhor decisão</span>
+          </button>
+          <button id="mode-edit" aria-pressed="false">
+            <b>Pode alterar</b><span>Cria planos e listas e muda status, sem apagar nada</span>
+          </button>
+        </div>
+        <div class="msgs" id="msgs" aria-live="polite"></div>
+        <div class="hist" id="hist" hidden></div>
+        <form id="chat-form">
+          <textarea
+            id="chat-in"
+            placeholder="Pergunte sobre o seu planejamento…"
+            aria-label="Mensagem para o assistente"
+          ></textarea
+          ><button type="submit" id="chat-send">Enviar</button>
+        </form>
+      </section>
+      <footer class="foot">
+        <span class="save" id="save"><i></i><span id="savetxt">Carregando…</span></span>
+        <span class="grp">
+          <button class="btn" id="dl">Baixar cópia</button>
+          <button class="btn" id="restore">Restaurar cópia</button
+          ><input type="file" id="restore-in" accept=".json,application/json" hidden />
+        </span>
+      </footer>
+    </div>
+
+    <!-- A ordem importa: cada arquivo usa o que os anteriores criaram. -->
+    <script src="js/vendor/anthropic-sdk.js"></script>
+    <script src="js/servicos-locais.js"></script>
+    <script src="js/dados-iniciais.js"></script>
+    <script src="js/estado.js"></script>
+    <script src="js/planos.js"></script>
+    <script src="js/agenda.js"></script>
+    <script src="js/relatorio.js"></script>
+    <script src="js/copia.js"></script>
+    <script src="js/desenho.js"></script>
+    <script src="js/interacao.js"></script>
+    <script src="js/assistente.js"></script>
+    <script src="js/inicio.js"></script>
+  </body>
+</html>
