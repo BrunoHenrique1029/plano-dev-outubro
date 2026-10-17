@@ -1,24 +1,24 @@
 /* Arrastar planos, mover o quadro, zoom de pinça e cliques nos botões do mapa */
 const board = $("#board");
+/* enquanto o dedo ou o mouse está apertado, o mapa espera para redesenhar (senão o clique se perde).
+   Às vezes o navegador não avisa que soltou (rolar a página no celular, barra de rolagem, lista aberta):
+   por isso também solta no pointercancel e ao sair da janela, e render() não espera mais que um instante. */
+function soltar() {
+  setTimeout(() => {
+    pointerDown = 0;
+    if (pendingRender && !drag) render();
+  }, 0);
+}
 document.addEventListener(
   "pointerdown",
   () => {
-    pointerDown = true;
+    pointerDown = Date.now();
   },
   true,
 );
-document.addEventListener(
-  "pointerup",
-  () =>
-    setTimeout(() => {
-      pointerDown = false;
-      if (pendingRender && !drag) {
-        pendingRender = false;
-        render();
-      }
-    }, 0),
-  true,
-);
+document.addEventListener("pointerup", soltar, true);
+document.addEventListener("pointercancel", soltar, true);
+addEventListener("blur", soltar);
 /* dois dedos: zoom de pinça no celular e no tablet */
 const fingers = new Map();
 let pinch = null;
@@ -79,10 +79,12 @@ board.addEventListener("pointercancel", fingerUp, true);
 board.addEventListener("pointerdown", (e) => {
   if (pinch) return;
   if (e.target.closest(".zoom,.banner,.tools,textarea,select,button,input,a")) return;
-  const el = e.target.closest(".node");
+  const no = e.target.closest(".node"),
+    el = no && !travado(get(no.dataset.id)) ? no : null; // plano travado não sai do lugar: arrasta o quadro
   drag = {
     id: el?.dataset.id || null,
     el,
+    lockedId: no && !el ? no.dataset.id : null,
     sx: e.clientX,
     sy: e.clientY,
     moved: false,
@@ -139,6 +141,10 @@ board.addEventListener("pointerup", () => {
     return;
   }
   if (!d.moved) {
+    if (d.lockedId) {
+      avisar(avisoTravado(get(d.lockedId)));
+      return;
+    }
     connectFrom = null;
     selected = null;
     confirmDel = null;
@@ -158,7 +164,7 @@ board.addEventListener(
 );
 
 document.addEventListener("click", (e) => {
-  pointerDown = false;
+  pointerDown = 0;
   const t = e.target;
   const c = t.closest(".chip[data-who]");
   if (c) {
@@ -196,6 +202,11 @@ document.addEventListener("click", (e) => {
   if (bn) {
     connectFrom = null;
     render();
+    return;
+  }
+  const alvo = t.closest("[data-mli-del],[data-mli-add],button[data-act]");
+  if (alvo && !["report", "ag-past"].includes(alvo.dataset.act) && travado(get(alvo.dataset.id))) {
+    avisar(avisoTravado(get(alvo.dataset.id)));
     return;
   }
   const mdel = t.closest("[data-mli-del]");
@@ -281,6 +292,10 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("focusin", (e) => {
   const t = e.target;
+  if ((t.dataset?.act === "title" || t.dataset?.mliText) && travado(get(t.dataset.id))) {
+    if (aviso !== avisoTravado(get(t.dataset.id))) avisar(avisoTravado(get(t.dataset.id)));
+    return;
+  }
   if (t.dataset?.act === "title" && selected !== t.dataset.id && !connectFrom) {
     selected = t.dataset.id;
     confirmDel = null;
@@ -290,6 +305,10 @@ document.addEventListener("focusin", (e) => {
 document.addEventListener("change", (e) => {
   const t = e.target,
     id = t.dataset.id;
+  if (id && travado(get(id))) {
+    render();
+    return;
+  }
   if (t.dataset.act === "title" && t.value !== (get(id)?.title || "")) write("nodes", id, { title: t.value });
   if (t.dataset.act === "who") write("nodes", id, { who: t.value });
   if (t.dataset.act === "status") setStatus(id, t.value);

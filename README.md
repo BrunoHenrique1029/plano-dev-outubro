@@ -20,7 +20,7 @@ No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 **Com a nuvem ligada** (o `js/nuvem-config.js` preenchido, que é como está no site publicado):
 
 - Cada pessoa entra com a conta Google. Só os e-mails liberados nas regras do Firestore veem e editam o mapa.
-- **Planos, listas, agendas e relatórios** ficam no Firestore (Firebase, plano grátis Spark). O que alguém muda aparece na hora nos outros aparelhos abertos.
+- **Planos, listas, agendas e relatórios** ficam no Firestore (Firebase, plano grátis Spark). O que alguém muda aparece na hora nos outros aparelhos abertos, sem recarregar. Se o relatório estiver aberto com o cursor dentro do texto, ele atualiza assim que o cursor sai.
 - **Sem internet** o site continua funcionando com a cópia guardada no aparelho. As mudanças sobem sozinhas quando a conexão volta.
 - **Imagens e arquivos** dos relatórios vão para o Firestore em partes de 900 KB, até 10 MB cada. Cada aparelho guarda uma cópia (IndexedDB) depois de abrir.
 - **"Editado por"** mostra o primeiro nome da conta Google de quem mudou.
@@ -29,6 +29,16 @@ No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 **Sem a nuvem** (`NUVEM_CONFIG = null` ou aberto pelo `file://`): tudo fica só no navegador (localStorage e IndexedDB), como nas versões anteriores, e cada navegador tem o próprio mapa. Limpar os dados do navegador apaga o mapa.
 
 **Modo claro ou escuro:** o botão com o ícone de lua (ou sol), no topo, troca o modo. A escolha fica guardada no navegador.
+
+## Filtro por pessoa
+
+Com o filtro em uma pessoa só (Dev, Aquisição ou Conteúdo), dá para mexer apenas nos planos, listas e agendas dela. Os outros, inclusive os de **Todos**, ficam apagados e só para ver: não dá para editar, arrastar, conectar nem apagar, e o relatório deles abre só para leitura. Para mexer em tudo, deixe o filtro em **Todos**.
+
+## Links nos relatórios
+
+- Clique num link para ver a barrinha com **Abrir ↗** (abre em outra aba), **Editar**, **Cartão** e **Remover**. Com Ctrl (ou Cmd no Mac) apertado, o clique já abre o link.
+- **Cartão do link (banner):** cole um link sozinho numa linha vazia, ou digite `/` e escolha **Link com prévia**. O cartão mostra a imagem, o título e o nome do site.
+- A prévia vem do [microlink.io](https://microlink.io), grátis até 50 links novos por dia. Se não achar a prévia, o cartão aparece só com o endereço. Vídeos do YouTube usam a capa do próprio YouTube.
 
 ## Ligar a nuvem (Firebase)
 
@@ -97,7 +107,7 @@ js/
   nuvem.js              login com Google, salvar e receber mudanças, anexos na nuvem
   planos.js             criar, conectar, organizar e apagar planos; abas de mapas
   agenda.js             reuniões e link do Google Agenda
-  relatorio.js          editor do relatório, imagens e arquivos
+  relatorio.js          editor do relatório, imagens, arquivos e cartões de link
   desenho.js            desenha o mapa, as setas e o zoom
   interacao.js          arrastar, pinça no celular e cliques
   inicio.js             teclado, botões e começo da página

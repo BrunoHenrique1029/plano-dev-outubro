@@ -104,6 +104,127 @@ function fileHtml(f) {
     ? `<p><img data-asset="${id}" data-name="${nm}" data-type="${esc(f.type)}" alt="${nm}"></p>`
     : `<p><a class="fileblk" contenteditable="false" data-asset="${id}" data-name="${nm}" data-type="${esc(f.type || "")}">📎 ${nm}</a></p>`;
 }
+/* ---------- links: cartão com prévia (o "banner" do link) ----------
+   O cartão guarda título, descrição, imagem e site em data-*; o conteúdo dele é sempre remontado aqui. */
+const httpUrl = (u) => {
+  try {
+    const x = new URL(String(u || "").trim());
+    return /^https?:$/.test(x.protocol) ? x.href : "";
+  } catch (e) {
+    return "";
+  }
+};
+const normUrl = (s) => {
+  s = String(s || "").trim();
+  return httpUrl(/^https?:\/\//i.test(s) ? s : "https://" + s);
+};
+const isLoneUrl = (s) => /^(https?:\/\/|www\.)[^\s<>"]+$/i.test(String(s || "").trim());
+const hostOf = (u) => {
+  try {
+    return new URL(u).hostname.replace(/^www\./, "");
+  } catch (e) {
+    return "";
+  }
+};
+function linkCardEl(m) {
+  const a = document.createElement("a"),
+    host = hostOf(m.url),
+    site = String(m.site || host).slice(0, 80),
+    title = String(m.title || host || m.url).slice(0, 200),
+    desc = String(m.desc || "").slice(0, 300),
+    img = httpUrl(m.img);
+  a.className = "linkcard";
+  a.contentEditable = "false";
+  a.href = m.url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  Object.assign(a.dataset, { title, site }, desc ? { desc } : {}, img ? { img } : {});
+  const txt = document.createElement("span"),
+    b = document.createElement("b"),
+    s = document.createElement("span"),
+    ico = document.createElement("img");
+  txt.className = "lc-txt";
+  b.textContent = title;
+  txt.append(b);
+  if (desc) {
+    const d = document.createElement("span");
+    d.className = "lc-desc";
+    d.textContent = desc;
+    txt.append(d);
+  }
+  s.className = "lc-site";
+  ico.className = "lc-ico";
+  ico.alt = "";
+  ico.referrerPolicy = "no-referrer";
+  ico.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=32`;
+  s.append(ico, document.createTextNode(site));
+  txt.append(s);
+  a.append(txt);
+  if (img) {
+    const im = document.createElement("img");
+    im.className = "lc-img";
+    im.alt = "";
+    im.loading = "lazy";
+    im.referrerPolicy = "no-referrer";
+    im.src = img;
+    a.append(im);
+  }
+  return a;
+}
+/* título, descrição e imagem do site vêm do microlink.io (grátis, sem chave, até 50 links novos por dia).
+   Sem resposta, o cartão sai só com o endereço e o ícone do site. */
+const previas = new Map();
+async function buscarPrevia(url) {
+  if (previas.has(url)) return previas.get(url);
+  let m = { url, site: hostOf(url) };
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);
+  if (yt) m.img = `https://i.ytimg.com/vi/${yt[1]}/hqdefault.jpg`;
+  try {
+    const ctl = new AbortController(),
+      t = setTimeout(() => ctl.abort(), 8000);
+    const r = await fetch("https://api.microlink.io/?url=" + encodeURIComponent(url), { signal: ctl.signal });
+    clearTimeout(t);
+    const j = await r.json();
+    if (j?.status === "success" && j.data) {
+      const d = j.data;
+      m = {
+        ...m,
+        title: d.title || "",
+        desc: d.description || "",
+        img: d.image?.url || m.img || "",
+        site: d.publisher || m.site,
+      };
+      previas.set(url, m);
+    }
+  } catch (e) {}
+  return m;
+}
+async function insertLinkCard(url, after) {
+  url = normUrl(url);
+  if (!url || !reportId) return null;
+  const ph = document.createElement("p");
+  ph.className = "uploading";
+  ph.textContent = "Buscando a prévia do link…";
+  if (after) {
+    after.after(ph);
+    edChanged();
+  } else {
+    restoreRange();
+    insertBlocks([ph]);
+  }
+  const target = reportId,
+    titem = reportItem,
+    m = await buscarPrevia(url);
+  if (reportId !== target || reportItem !== titem || !ph.isConnected) return null;
+  const p = document.createElement("p");
+  p.append(linkCardEl(m));
+  ph.replaceWith(p);
+  tidyEditor();
+  if (p.nextElementSibling) caretInto(p.nextElementSibling, true);
+  edChanged(true);
+  return p;
+}
+
 /* só deixa passar o que o editor sabe mostrar (o texto pode vir colado de qualquer lugar).
    Imagens e arquivos guardam só o id do anexo; o endereço para mostrar vem de showAssets. */
 function cleanNode(node) {
@@ -133,6 +254,10 @@ function cleanNode(node) {
     if (ds.type) im.dataset.type = ds.type.slice(0, 80);
     if (/^[sml]$/.test(ds.size || "")) im.dataset.size = ds.size;
     return im;
+  }
+  if (tag === "A" && node.classList.contains("linkcard")) {
+    const url = httpUrl(node.getAttribute("href"));
+    return url ? linkCardEl({ url, title: ds.title, desc: ds.desc, img: ds.img, site: ds.site }) : null;
   }
   if (tag === "A" && node.classList.contains("fileblk")) {
     const id = ds.asset;
@@ -260,7 +385,7 @@ function tidyEditor() {
     } else if (n.nodeType === 3) n.remove();
   });
   const last = ed.lastElementChild;
-  if (!last || last.tagName !== "P" || last.querySelector("img,a.fileblk")) {
+  if (!last || last.tagName !== "P" || last.querySelector("img,a.fileblk,a.linkcard")) {
     const p = document.createElement("p");
     p.innerHTML = "<br>";
     ed.append(p);
@@ -272,7 +397,8 @@ function updateBlank() {
   const ed = ED();
   ed.classList.toggle(
     "blank",
-    !ed.textContent.trim() && !ed.querySelector("img,hr,table,a.fileblk,li,pre,blockquote,.callout,h1,h2,h3"),
+    !ed.textContent.trim() &&
+      !ed.querySelector("img,hr,table,a.fileblk,a.linkcard,li,pre,blockquote,.callout,h1,h2,h3"),
   );
 }
 function loadEditor() {
@@ -359,6 +485,7 @@ const BLOCKS = [
   { k: "table", label: "Tabela", hint: "Tabela 3 × 3", icon: "▦" },
   { k: "image", label: "Imagem", hint: "Enviar uma imagem", icon: "🖼" },
   { k: "file", label: "Arquivo", hint: "Anexar PDF, vídeo ou outro arquivo", icon: "📎" },
+  { k: "linkcard", label: "Link com prévia", hint: "Cartão com a imagem e o título do site", icon: "🔗" },
 ];
 const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 function blockType() {
@@ -385,6 +512,10 @@ function setBlock(type) {
   }
   if (type === "file") {
     $("#file-in").click();
+    return;
+  }
+  if (type === "linkcard") {
+    showLink(null, true);
     return;
   }
   const li = curLi();
@@ -457,7 +588,8 @@ function insertBlocks(nodes) {
   const ed = ED();
   let b = curBlock();
   if (b && b.closest && b.closest("table")) b = blockOf(b);
-  const empty = b && b.tagName === "P" && !b.textContent.trim() && !b.querySelector("img,a.fileblk");
+  const empty =
+    b && b.tagName === "P" && !b.textContent.trim() && !b.querySelector("img,a.fileblk,a.linkcard");
   if (b && empty) b.replaceWith(...nodes);
   else if (b) b.after(...nodes);
   else ed.append(...nodes);
@@ -549,7 +681,9 @@ function caretRect() {
   return (b || ED()).getBoundingClientRect();
 }
 function hidePops() {
-  ["#slash", "#colors", "#linkbar", "#imgbar"].forEach((s) => {
+  linkSel = null;
+  linkCard = false;
+  ["#slash", "#colors", "#linkbar", "#imgbar", "#linkpop"].forEach((s) => {
     const e = $(s);
     if (e) e.hidden = true;
   });
@@ -566,26 +700,39 @@ function showColors(btn) {
     <button class="clear" data-fg="none">Limpar formatação</button>`;
   placePop($("#colors"), btn.getBoundingClientRect());
 }
-function showLink(btn) {
+let linkCard = false; // a barra do link está criando um cartão com prévia?
+function showLink(btn, card) {
   const r = lastRange;
   let cur = "";
   const a =
     r && (r.startContainer.nodeType === 3 ? r.startContainer.parentNode : r.startContainer).closest?.("a");
-  if (a && inEd(a)) cur = a.getAttribute("href") || "";
+  if (a && inEd(a) && !card) cur = a.getAttribute("href") || "";
+  hidePops();
+  linkCard = !!card;
   $("#link-in").value = cur;
-  placePop($("#linkbar"), btn.getBoundingClientRect());
+  $("#link-in").placeholder = card ? "Cole o link do site" : "Cole o link (vazio remove)";
+  placePop($("#linkbar"), btn ? btn.getBoundingClientRect() : caretRect());
   $("#link-in").focus();
 }
 function applyLink() {
   let url = $("#link-in").value.trim();
+  const card = linkCard;
   hidePops();
   restoreRange();
+  if (card) {
+    if (url) insertLinkCard(url);
+    return;
+  }
   if (!url) {
     document.execCommand("unlink");
     edChanged();
     return;
   }
   if (!/^(https?:|mailto:)/i.test(url)) url = "https://" + url;
+  if (!/^mailto:/i.test(url) && !httpUrl(url)) {
+    $("#file-status").textContent = "Esse endereço não parece um link.";
+    return;
+  }
   const r = selRange();
   if (r && r.collapsed)
     document.execCommand("insertHTML", false, `<a href="${esc(url)}">${esc(url)}</a>&nbsp;`);
@@ -742,6 +889,7 @@ const UPLOAD_ERR = {
   not_granted: "você não tem permissão para anexar aqui",
 };
 async function insertFiles(list) {
+  if (!ED().isContentEditable) return;
   if (!assets) {
     $("#file-status").textContent = "Este navegador não deixa guardar anexos.";
     return;
@@ -955,7 +1103,7 @@ ed0.addEventListener("keydown", (e) => {
 });
 ed0.addEventListener("click", (e) => {
   const li = e.target.closest("ul.todo > li");
-  if (li && inEd(li) && e.clientX - li.getBoundingClientRect().left < 26) {
+  if (li && inEd(li) && e.clientX - li.getBoundingClientRect().left < 26 && ED().isContentEditable) {
     e.preventDefault();
     if (li.dataset.checked === "true") delete li.dataset.checked;
     else li.dataset.checked = "true";
@@ -968,9 +1116,10 @@ ed0.addEventListener("click", (e) => {
     openAsset(a.dataset.asset, a.dataset.name, a.dataset.type);
     return;
   }
-  if (a && inEd(a) && (e.ctrlKey || e.metaKey)) {
+  if (a && inEd(a) && a.getAttribute("href")) {
     e.preventDefault();
-    window.open(a.href, "_blank", "noopener");
+    if (e.ctrlKey || e.metaKey || !ED().isContentEditable) window.open(a.href, "_blank", "noopener");
+    else showLinkPop(a);
     return;
   }
   const img = e.target.closest("img");
@@ -985,6 +1134,88 @@ ed0.addEventListener("click", (e) => {
       .forEach((b) => b.setAttribute("aria-pressed", (img.dataset.size || "l") === b.dataset.size));
   }
 });
+let linkSel = null;
+const shortUrl = (u) => {
+  const s = String(u)
+    .replace(/^https?:\/\/(www\.)?/, "")
+    .replace(/\/$/, "");
+  return s.length > 42 ? s.slice(0, 40) + "…" : s;
+};
+function showLinkPop(a) {
+  hidePops();
+  linkSel = a;
+  const card = a.classList.contains("linkcard");
+  $("#lp-open").href = a.href;
+  $("#lp-url").textContent = shortUrl(a.href);
+  $("#lp-url").title = a.href;
+  $('#linkpop [data-lp="edit"]').hidden = card;
+  $('#linkpop [data-lp="card"]').textContent = card ? "Virar link" : "Cartão";
+  const r = a.getBoundingClientRect();
+  placePop(
+    $("#linkpop"),
+    card ? { left: r.left + 8, right: r.left + 8, top: r.top + 8, bottom: r.top + 8 } : r,
+  );
+}
+$("#linkpop").addEventListener("mousedown", (e) => {
+  if (e.target.closest("button")) e.preventDefault();
+});
+$("#linkpop").addEventListener("click", (e) => {
+  const a = linkSel;
+  if (e.target.closest("#lp-open")) {
+    hidePops();
+    return; // o próprio link abre a aba nova
+  }
+  const b = e.target.closest("button[data-lp]");
+  if (!b || !a || !inEd(a)) return;
+  const card = a.classList.contains("linkcard"),
+    blk = blockOf(a);
+  if (b.dataset.lp === "edit") {
+    const r = document.createRange();
+    r.selectNodeContents(a);
+    lastRange = r;
+    showLink({ getBoundingClientRect: () => a.getBoundingClientRect() });
+    return;
+  }
+  hidePops();
+  if (b.dataset.lp === "rm") {
+    if (card) {
+      a.remove();
+      if (blk && blk !== ED() && !blk.textContent.trim() && !blk.querySelector("img,a")) blk.remove();
+    } else a.replaceWith(...a.childNodes);
+  } else if (b.dataset.lp === "card") {
+    if (card) {
+      const l = document.createElement("a");
+      l.href = a.href;
+      l.textContent = a.href;
+      a.replaceWith(l);
+    } else {
+      // o link sozinho na linha vira o cartão; no meio do texto, o cartão entra na linha de baixo
+      const url = a.href;
+      if (blk && blk !== ED() && blk.textContent.trim() === a.textContent.trim()) {
+        insertLinkCard(url, blk).then((p) => {
+          if (p && blk.isConnected) {
+            blk.remove();
+            tidyEditor();
+            edChanged(true);
+          }
+        });
+        return;
+      }
+      insertLinkCard(url, blk && blk !== ED() ? blk : null);
+      return;
+    }
+  }
+  tidyEditor();
+  edChanged();
+});
+ED().addEventListener(
+  "error",
+  (e) => {
+    // imagem do cartão que não carregou (site fora do ar, sem internet): some, e o cartão fica só com o texto
+    if (e.target.tagName === "IMG" && e.target.closest(".linkcard")) e.target.classList.add("off");
+  },
+  true,
+);
 let imgSel = null;
 $("#imgbar").addEventListener("mousedown", (e) => e.preventDefault());
 $("#imgbar").addEventListener("click", (e) => {
@@ -1014,6 +1245,25 @@ ed0.addEventListener("paste", (e) => {
     insertFiles(fs);
     return;
   }
+  const plain = cd.getData("text/plain") || "";
+  if (isLoneUrl(plain) && normUrl(plain)) {
+    e.preventDefault();
+    const url = normUrl(plain),
+      b = curBlock(),
+      r = liveRange();
+    if (r && !r.collapsed) document.execCommand("createLink", false, url);
+    else if (
+      b &&
+      b.parentElement === ED() &&
+      b.tagName === "P" &&
+      !b.textContent.trim() &&
+      !b.querySelector("img,a")
+    )
+      insertLinkCard(url);
+    else document.execCommand("insertHTML", false, `<a href="${esc(url)}">${esc(plain.trim())}</a>&nbsp;`);
+    edChanged();
+    return;
+  }
   const html = cd.getData("text/html");
   e.preventDefault();
   if (html) document.execCommand("insertHTML", false, sanitize(html));
@@ -1037,17 +1287,20 @@ ed0.addEventListener("drop", (e) => {
   }
   insertFiles(fs);
 });
-ed0.addEventListener("blur", () => {
+ed0.addEventListener("blur", (e) => {
   if (repTimer) flushReport();
+  // com o cursor no texto, o que chega de outro aparelho espera; quando o cursor sai do relatório, atualiza
+  if (!e.relatedTarget?.closest?.("#drawer, .pop")) setTimeout(refreshEditorFromData, 0);
 });
 $("#drawer").addEventListener("scroll", () => {
   $("#imgbar").hidden = true;
+  $("#linkpop").hidden = true;
   $("#colors").hidden = true;
   $("#linkbar").hidden = true;
 });
 document.addEventListener("mousedown", (e) => {
-  if (!e.target.closest("#slash,#colors,#linkbar,#imgbar,#edbar,#rep-ed")) {
-    ["#colors", "#linkbar", "#imgbar"].forEach((s) => ($(s).hidden = true));
+  if (!e.target.closest("#slash,#colors,#linkbar,#imgbar,#linkpop,#edbar,#rep-ed")) {
+    ["#colors", "#linkbar", "#imgbar", "#linkpop"].forEach((s) => ($(s).hidden = true));
   }
 });
 $("#img-in").onchange = (e) => {
@@ -1077,6 +1330,7 @@ function openReport(id, quiet, item) {
   loadEditor();
   fillDrawer();
   render();
+  if (travado(n)) return; // só leitura: fillDrawer já avisou
   $("#rep-status").textContent = `${wordCount()} palavras · salva sozinho`;
   if (!quiet) {
     const ed = ED();
@@ -1107,6 +1361,16 @@ function fillDrawer() {
   document
     .querySelectorAll('#edbar [data-cmd="image"], #edbar [data-cmd="file"]')
     .forEach((b) => (b.hidden = !assets));
+  // relatório de quem não está no filtro: só para ler
+  const ro = travado(n);
+  if (ro !== $("#drawer").classList.contains("ro")) {
+    $("#drawer").classList.toggle("ro", ro);
+    ED().contentEditable = ro ? "false" : "true";
+    $("#edbar").hidden = ro;
+    if (ro) hidePops();
+    else $("#rep-status").textContent = `${wordCount()} palavras · salva sozinho`;
+  }
+  if (ro) $("#rep-status").textContent = `Só leitura. ${avisoTravado(n)}`;
 }
 /* chegou mudança de outro aparelho: atualiza o relatório aberto, se ninguém está escrevendo nele agora */
 function refreshEditorFromData() {

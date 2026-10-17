@@ -24,7 +24,7 @@ let view = { tx: 40, ty: 40, s: 1 },
 let assets = null;
 let myId = "local", // sem login, quem edita neste navegador é sempre "você"; com a nuvem, é a conta Google
   meuNome = "";
-let pointerDown = false,
+let pointerDown = 0, // quando o dedo ou o mouse apertou (0 = solto)
   pendingRender = false,
   drag = null;
 let undoStack = [],
@@ -66,6 +66,25 @@ const isDesc = (id, anc) => {
   return false;
 };
 const statusOf = (n) => n.status || (n.done ? "done" : "todo");
+/* filtro numa pessoa só: os planos das outras pessoas ficam apagados e travados (dá para ver, não para mexer) */
+const travado = (n) => !!n && who !== "all" && (n.who || "all") !== who;
+const DE = { all: "de Todos", D: "do Dev", A: "da Aquisição", C: "do Conteúdo" };
+function avisoTravado(n) {
+  const w = n.who || "all",
+    oque = isAgenda(n) ? "Esta agenda" : isList(n) ? "Esta lista" : "Este plano";
+  return `${oque} é ${DE[w]}. Para mexer, marque ${w === "all" ? "" : WHO[w] + " ou "}Todos no filtro.`;
+}
+let aviso = "",
+  avisoTimer = null;
+function avisar(txt) {
+  aviso = txt;
+  clearTimeout(avisoTimer);
+  avisoTimer = setTimeout(() => {
+    aviso = "";
+    render();
+  }, 4000);
+  render();
+}
 const matches = (n) =>
   !q ||
   [

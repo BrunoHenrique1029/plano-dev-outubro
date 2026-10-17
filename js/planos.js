@@ -243,6 +243,10 @@ async function saveList(id, list) {
 
 async function connect(from, to) {
   connectFrom = null;
+  if (travado(get(to))) {
+    avisar(avisoTravado(get(to)));
+    return;
+  }
   if (from === to || isDesc(to, from) || isList(get(to))) {
     render();
     return;

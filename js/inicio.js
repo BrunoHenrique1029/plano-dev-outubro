@@ -20,6 +20,7 @@ document.addEventListener("keydown", (e) => {
     connectFrom = null;
     render();
   }
+  if (t.dataset.mliText && travado(get(t.dataset.id))) return;
   if (e.key === "Enter" && t.dataset.mliText) {
     e.preventDefault();
     const id = t.dataset.id,

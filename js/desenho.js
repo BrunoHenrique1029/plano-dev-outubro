@@ -46,11 +46,16 @@ function renderTabs() {
       .join("") + `<button class="tab add" id="add-map">+ Novo mapa</button>`;
 }
 
+let renderDepois = null;
 function render() {
-  if (pointerDown || drag) {
+  if (drag || (pointerDown && Date.now() - pointerDown < 1500)) {
     pendingRender = true;
+    // se o navegador não avisar que soltou, desenha assim mesmo daqui a pouco
+    clearTimeout(renderDepois);
+    renderDepois = setTimeout(() => pendingRender && render(), 1600);
     return;
   }
+  pendingRender = false;
   const ae = document.activeElement,
     key = ae?.dataset?.key,
     typed = key ? ae.value : null;
@@ -76,6 +81,9 @@ function render() {
   if (connectFrom) {
     ban.hidden = false;
     ban.innerHTML = `<span>Agora clique no plano que vai receber este.</span><button data-ban="connect-no">Cancelar</button>`;
+  } else if (aviso) {
+    ban.hidden = false;
+    ban.innerHTML = `<span>${esc(aviso)}</span>`;
   } else ban.hidden = true;
 
   const num = topNumbers();
@@ -85,23 +93,29 @@ function render() {
     const sub = !!parentOf(n),
       c = `var(--p-${n.who || "all"})`,
       isSel = selected === n.id,
-      st = statusOf(n);
-    const dim = (who !== "all" && n.who !== who) || (q && !matches(n));
+      st = statusOf(n),
+      lock = travado(n),
+      ro = lock ? "readonly" : "",
+      off = lock ? "disabled" : "";
+    const dim = lock || (q && !matches(n));
     const cls = [
       "node",
       sub ? "sub" : "main",
       isSel ? "sel" : "",
       dim ? "dim" : "",
+      lock ? "lock" : "",
       q && matches(n) ? "hit" : "",
       st === "done" ? "done" : "",
       st === "doing" ? "st-doing" : "",
       st === "blocked" ? "st-blocked" : "",
-      connectFrom && connectFrom !== n.id && !isDesc(n.id, connectFrom) && !isList(n) ? "target" : "",
+      connectFrom && connectFrom !== n.id && !isDesc(n.id, connectFrom) && !isList(n) && !lock
+        ? "target"
+        : "",
     ].join(" ");
     const sib = steps(parentOf(n)),
       si = sib.findIndex((x) => x.id === n.id);
     const tools =
-      !isSel || connectFrom
+      !isSel || connectFrom || lock
         ? ""
         : `<div class="tools">
         <div class="row">
@@ -131,8 +145,8 @@ function render() {
         </div>
         ${n.editedAt ? `<span class="edited">${esc(editedLine(n))}</span>` : ""}
       </div>`;
-    const ta = `<textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" placeholder="${sub ? "Nome do sub-plano" : "Nome do plano"}" aria-label="Nome do plano">${esc(n.title)}</textarea>`;
-    const ck = `<input type="checkbox" class="ck" data-act="done" data-id="${n.id}" ${st === "done" ? "checked" : ""} aria-label="Marcar como feito">`;
+    const ta = `<textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="${sub ? "Nome do sub-plano" : "Nome do plano"}" aria-label="Nome do plano">${esc(n.title)}</textarea>`;
+    const ck = `<input type="checkbox" class="ck" data-act="done" data-id="${n.id}" ${st === "done" ? "checked" : ""} ${off} aria-label="Marcar como feito">`;
     const nf = (n.files || []).length;
     const rep = `<button class="rep ${n.report || nf ? "has" : ""}" data-act="report" data-id="${n.id}" aria-label="Abrir relatório" title="Relatório">${ICON}${nf ? `<span class="clip">${nf}</span>` : ""}</button>`;
     const L = n.list || [],
@@ -151,12 +165,12 @@ function render() {
       const pct = L.length ? Math.round((ld * 100) / L.length) : 0;
       h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">
         <div class="lhead"><span>Lista · ${WHO[n.who || "all"]}</span><span class="right"><span class="lc">${ld}/${L.length}</span>${rep}</span></div>
-        <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" placeholder="Nome da lista" aria-label="Nome da lista">${esc(n.title)}</textarea>
+        <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="Nome da lista" aria-label="Nome da lista">${esc(n.title)}</textarea>
         <div class="lbar"><i style="width:${pct}%"></i></div>
         <table class="mtable"><tbody>${L.map(
           (i) => `<tr class="${i.done ? "ok" : ""}">
-          <td class="c"><input type="checkbox" class="lck" data-mli-done="${i.id}" data-id="${n.id}" ${i.done ? "checked" : ""} aria-label="Marcar item"></td>
-          <td><textarea rows="1" class="li" data-key="li-${i.id}" data-mli-text="${i.id}" data-id="${n.id}" placeholder="Escreva o item" aria-label="Item da lista">${esc(i.text)}</textarea></td>
+          <td class="c"><input type="checkbox" class="lck" data-mli-done="${i.id}" data-id="${n.id}" ${i.done ? "checked" : ""} ${off} aria-label="Marcar item"></td>
+          <td><textarea rows="1" class="li" data-key="li-${i.id}" data-mli-text="${i.id}" data-id="${n.id}" ${ro} placeholder="Escreva o item" aria-label="Item da lista">${esc(i.text)}</textarea></td>
           <td class="a"><button class="rep ${i.report || (i.files || []).length ? "has" : ""}" data-act="report" data-id="${n.id}" data-item="${i.id}" aria-label="Abrir relatório do item" title="Relatório do item">${ICON}${(i.files || []).length ? `<span class="clip">${i.files.length}</span>` : ""}</button><button class="del" data-mli-del="${i.id}" data-id="${n.id}" aria-label="Apagar item">✕</button></td></tr>`,
         ).join("")}</tbody></table>
         <button class="add-li" data-mli-add="1" data-id="${n.id}">+ Item</button>
@@ -290,7 +304,7 @@ function drawEdges() {
     const n = get(id),
       c = n.collapsed,
       k = descCount(id);
-    hb += `<button class="hub ${c ? "closed" : ""}" data-act="fold" data-id="${id}" style="left:${h.x}px;top:${h.y}px;--c:var(--p-${n.who || "all"})" aria-expanded="${!c}" title="${c ? `Abrir ramificações (${k})` : "Fechar ramificações"}" aria-label="${c ? "Abrir ramificações" : "Fechar ramificações"}">${c ? "+" : "−"}${c ? `<span class="n">${k}</span>` : ""}</button>`;
+    hb += `<button class="hub ${c ? "closed" : ""} ${travado(n) ? "lock" : ""}" data-act="fold" data-id="${id}" style="left:${h.x}px;top:${h.y}px;--c:var(--p-${n.who || "all"})" aria-expanded="${!c}" title="${c ? `Abrir ramificações (${k})` : "Fechar ramificações"}" aria-label="${c ? "Abrir ramificações" : "Fechar ramificações"}">${c ? "+" : "−"}${c ? `<span class="n">${k}</span>` : ""}</button>`;
   }
   g.innerHTML = out;
   const hd = document.getElementById("hubs");

@@ -675,3 +675,13 @@
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* filtro numa pessoa só: os planos das outras ficam travados (js/estado.js, travado) */
+.node.lock,
+.node.lock textarea {
+  cursor: default;
+}
+.node.lock .add-li,
+.node.lock .del {
+  display: none;
+}

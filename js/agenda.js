@@ -74,14 +74,15 @@ function gcalUrl(i) {
 function agendaRows(n, rep) {
   const now = Date.now(),
     L = (n.list || []).slice().sort(mtgSort);
-  const up = L.filter((i) => !mtgPast(i, now)),
+  const lock = travado(n),
+    up = L.filter((i) => !mtgPast(i, now)),
     past = L.filter((i) => mtgPast(i, now)).reverse(),
     open = showPast.has(n.id);
   const row = (i, cls) => {
     const nf = (i.files || []).length,
       join = safeUrl(i.link);
     return `<div class="ag-row ${cls} ${i.done ? "ok" : ""}">
-      <input type="checkbox" class="lck" data-mli-done="${i.id}" data-id="${n.id}" ${i.done ? "checked" : ""} aria-label="Marcar reunião como feita">
+      <input type="checkbox" class="lck" data-mli-done="${i.id}" data-id="${n.id}" ${i.done ? "checked" : ""} ${lock ? "disabled" : ""} aria-label="Marcar reunião como feita">
       <span class="ag-time">${i.time ? esc(i.time) + `<small>${durTxt(i.dur)}</small>` : "Dia<small>inteiro</small>"}</span>
       <button class="ag-main" data-act="mtg-open" data-id="${n.id}" data-item="${i.id}" title="Editar reunião"><b>${esc(i.text || "Reunião")}</b>${i.with ? `<span>com ${esc(i.with)}</span>` : ""}${i.link && !join ? `<span>${esc(i.link)}</span>` : ""}</button>
       <span class="ag-acts">${join ? `<a class="ag-join" href="${esc(join)}" target="_blank" rel="noopener" title="Abrir o link da reunião">Entrar</a>` : ""}<button class="rep ${i.report || nf ? "has" : ""}" data-act="report" data-id="${n.id}" data-item="${i.id}" aria-label="Abrir relatório da reunião" title="Relatório da reunião">${ICON}${nf ? `<span class="clip">${nf}</span>` : ""}</button><a class="gcal" href="${esc(gcalUrl(i))}" target="_blank" rel="noopener" title="Adicionar ao Google Agenda" aria-label="Adicionar ao Google Agenda">${CAL_ADD}</a></span>
@@ -109,7 +110,7 @@ function agendaRows(n, rep) {
       `<button class="ag-past-t" data-act="ag-past" data-id="${n.id}" aria-expanded="${open}">${open ? "Esconder" : "Ver"} as que já passaram (${past.length})</button>` +
       (open ? days(past, "past", false) : "");
   return `<div class="lhead"><span class="ttl">${CAL} Agenda · ${WHO[n.who || "all"]}</span><span class="right"><span class="lc">${up.length} ${up.length === 1 ? "próxima" : "próximas"}</span>${rep}</span></div>
-    <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" placeholder="Nome da agenda" aria-label="Nome da agenda">${esc(n.title)}</textarea>
+    <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${lock ? "readonly" : ""} placeholder="Nome da agenda" aria-label="Nome da agenda">${esc(n.title)}</textarea>
     ${body}
     <button class="add-li" data-act="mtg-add" data-id="${n.id}">+ Reunião</button>`;
 }
