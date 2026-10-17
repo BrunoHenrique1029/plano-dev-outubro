@@ -20,7 +20,8 @@ No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 **Com a nuvem ligada** (o `js/nuvem-config.js` preenchido, que é como está no site publicado):
 
 - Cada pessoa entra com a conta Google. Só os e-mails liberados nas regras do Firestore veem e editam o mapa.
-- **Planos, listas, agendas e relatórios** ficam no Firestore (Firebase, plano grátis Spark). O que alguém muda aparece na hora nos outros aparelhos abertos, sem recarregar. Se o relatório estiver aberto com o cursor dentro do texto, ele atualiza assim que o cursor sai.
+- **Planos, listas, agendas e relatórios** ficam no Firestore (Firebase, plano grátis Spark). O que alguém muda aparece na hora nos outros aparelhos abertos, sem recarregar.
+- **Relatório aberto em dois lugares:** o que um escreve aparece no outro enquanto ele digita (a cada segundo e meio, no máximo), e o cursor de quem está lendo fica onde estava. Se duas pessoas escrevem ao mesmo tempo em partes diferentes, até no mesmo parágrafo, o texto das duas fica. Se mexerem na mesma palavra, fica a de quem ainda está digitando.
 - **Sem internet** o site continua funcionando com a cópia guardada no aparelho. As mudanças sobem sozinhas quando a conexão volta.
 - **Imagens e arquivos** dos relatórios vão para o Firestore em partes de 900 KB, até 10 MB cada. Cada aparelho guarda uma cópia (IndexedDB) depois de abrir.
 - **"Editado por"** mostra o primeiro nome da conta Google de quem mudou.

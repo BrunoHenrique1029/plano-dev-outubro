@@ -3,6 +3,7 @@
 let reportId = null,
   reportItem = null,
   repTimer = null,
+  repDesde = 0,
   lastRange = null,
   loadedHtml = "";
 /* o relatório pode ser de um plano ou de um item de lista (guardado dentro do item) */
@@ -14,15 +15,15 @@ const repData = () => {
   if (!reportItem) return n;
   return repItem();
 };
-async function repWrite(patch) {
+async function repWrite(patch, opt = {}) {
   const n = get(reportId);
   if (!n) return;
-  if (!reportItem) return write("nodes", reportId, patch, { silent: true });
+  if (!reportItem) return write("nodes", reportId, patch, { silent: true, ...opt });
   const list = listOf(reportId),
     i = list.find((x) => x.id === reportItem);
   if (!i) return;
   Object.assign(i, patch);
-  return write("nodes", reportId, { list }, { silent: true });
+  return write("nodes", reportId, { list }, { silent: true, ...opt });
 }
 
 /* ---------- editor do relatório (parecido com uma página do Notion) ----------
@@ -404,6 +405,7 @@ function updateBlank() {
 function loadEditor() {
   const html = docHtml(repData());
   loadedHtml = canon(html);
+  lembrar(loadedHtml);
   ED().innerHTML = html || "<p><br></p>";
   tidyEditor();
   hidePops();
@@ -939,8 +941,10 @@ function edChanged(now) {
   updateBlank();
   showAssets(ED());
   $("#rep-status").textContent = "Salvando…";
+  // salva meio segundo depois de parar de digitar e, enquanto digita, a cada 1,5 s (para os outros verem)
+  if (!repTimer) repDesde = Date.now();
   clearTimeout(repTimer);
-  repTimer = setTimeout(flushReport, now ? 0 : 700);
+  repTimer = setTimeout(flushReport, now ? 0 : Math.max(0, Math.min(500, repDesde + 1500 - Date.now())));
 }
 function flushReport() {
   clearTimeout(repTimer);
@@ -948,8 +952,21 @@ function flushReport() {
   if (!reportId) return;
   const d = repData();
   if (!d) return;
-  const html = canon(ED().innerHTML),
-    box = document.createElement("div");
+  let html = canon(ED().innerHTML);
+  const meuNovo = html !== loadedHtml,
+    deles = canon(docHtml(d));
+  // chegou mudança de outra pessoa: junta com a minha, bloco por bloco, e mostra sem tirar o cursor do lugar
+  if (deles !== loadedHtml) {
+    lembrar(deles);
+    const junto = canon(juntar(versoes.get(d.reportBase) ?? loadedHtml, html, deles, meuNovo));
+    if (junto !== html && !trocarBlocos(junto)) {
+      repTimer = setTimeout(flushReport, 400); // ainda escolhendo a palavra no teclado do celular
+      return;
+    }
+    loadedHtml = deles;
+    html = canon(ED().innerHTML);
+  }
+  const box = document.createElement("div");
   box.innerHTML = html;
   const text = ED()
     .innerText.replace(/[\t ]+/g, " ")
@@ -966,9 +983,181 @@ function flushReport() {
     $("#rep-status").textContent = `Salvo · ${wordCount()} palavras`;
     return;
   }
+  const base = loadedHtml;
   loadedHtml = html;
-  repWrite({ reportHtml: html, report: text, files });
+  lembrar(html);
+  repWrite({ reportHtml: html, report: text, files, reportBase: assinar(base) }, { noHistory: !meuNovo });
   $("#rep-status").textContent = `Salvo · ${wordCount()} palavras`;
+}
+
+/* ---------- relatório ao vivo ----------
+   Cada bloco do topo (parágrafo, título, lista, tabela, imagem…) é comparado com o que chegou.
+   Se duas pessoas mexeram em pontos diferentes (até no mesmo parágrafo), as duas mudanças ficam; no mesmo
+   pedaço, fica a de quem ainda está digitando. Cada gravação leva a assinatura da versão de onde saiu (reportBase). */
+const versoes = new Map();
+let compondo = false,
+  sincTimer = null;
+function assinar(html) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < html.length; i++) h = Math.imul(h ^ html.charCodeAt(i), 16777619);
+  return (h >>> 0).toString(36) + "." + html.length.toString(36);
+}
+function lembrar(html) {
+  const k = assinar(html);
+  versoes.delete(k);
+  versoes.set(k, html);
+  while (versoes.size > 40) versoes.delete(versoes.keys().next().value);
+}
+function blocos(html) {
+  const box = document.createElement("div");
+  box.innerHTML = html;
+  return [...box.childNodes].map((n) => (n.nodeType === 1 ? n.outerHTML : esc(n.nodeValue)));
+}
+/* o pedaço de `a` que mudou para virar `b` (serve para lista de blocos e para texto) */
+function trecho(a, b) {
+  let i = 0,
+    j = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  while (j < a.length - i && j < b.length - i && a[a.length - 1 - j] === b[b.length - 1 - j]) j++;
+  return { de: i, ate: a.length - j, novo: b.slice(i, b.length - j) };
+}
+const juntaTudo = (v) => (typeof v === "string" ? v : v.join(""));
+const comeca = (a, b) => b.length <= a.length && juntaTudo(a.slice(0, b.length)) === juntaTudo(b);
+const termina = (a, b) => b.length <= a.length && juntaTudo(a.slice(a.length - b.length)) === juntaTudo(b);
+function aplicar(b, partes) {
+  const out = [];
+  let pos = 0;
+  for (const p of partes) {
+    out.push(b.slice(pos, p.de), p.novo);
+    pos = p.ate;
+  }
+  out.push(b.slice(pos));
+  return typeof b === "string" ? out.join("") : out.flat();
+}
+/* junta duas mudanças feitas sobre a mesma base; null quando mexeram no mesmo pedaço */
+function juntar3(b, m, d) {
+  let x, y;
+  if (m.de === m.ate && d.de === d.ate && m.de === d.de) {
+    // os dois só acrescentaram no mesmo ponto: se um já tem o do outro, fica um só; senão, sempre na mesma ordem
+    if (comeca(m.novo, d.novo) || termina(m.novo, d.novo)) return aplicar(b, [m]);
+    if (comeca(d.novo, m.novo) || termina(d.novo, m.novo)) return aplicar(b, [d]);
+    [x, y] = juntaTudo(m.novo) <= juntaTudo(d.novo) ? [m, d] : [d, m];
+  } else if (m.ate <= d.de) [x, y] = [m, d];
+  else if (d.ate <= m.de) [x, y] = [d, m];
+  else return null;
+  if (x.ate === y.de) {
+    // encostados: não repete o que um lado já trouxe do outro
+    if (x.de === x.ate && comeca(y.novo, x.novo)) return aplicar(b, [y]);
+    if (y.de === y.ate && termina(x.novo, y.novo)) return aplicar(b, [x]);
+  }
+  return aplicar(b, [x, y]);
+}
+function juntar(base, meu, deles, meuGanha) {
+  if (meu === deles || deles === base) return meu;
+  if (meu === base) return deles;
+  const b = blocos(base),
+    m = trecho(b, blocos(meu)),
+    d = trecho(b, blocos(deles));
+  let r = juntar3(b, m, d);
+  if (
+    !r &&
+    m.de === d.de &&
+    m.ate === m.de + 1 &&
+    d.ate === d.de + 1 &&
+    m.novo.length === 1 &&
+    d.novo.length === 1
+  ) {
+    // os dois mexeram no mesmo parágrafo: junta letra por letra, se foram pontos diferentes dele
+    const bb = b[m.de],
+      um = juntar3(bb, trecho(bb, m.novo[0]), trecho(bb, d.novo[0]));
+    if (um != null) r = [...b.slice(0, m.de), um, ...b.slice(m.ate)];
+  }
+  return r ? r.join("") : meuGanha ? meu : deles;
+}
+/* letras que dá para editar dentro dos blocos (os cartões de link e de arquivo ficam de fora) */
+function textosDe(nodes) {
+  const out = [],
+    ed = ED();
+  const ok = (t) => {
+    const c = t.parentElement?.closest('[contenteditable="false"]');
+    return !c || c === ed;
+  };
+  nodes.forEach((top) => {
+    if (top.nodeType === 3) return out.push(top);
+    const w = document.createTreeWalker(top, NodeFilter.SHOW_TEXT);
+    for (let t; (t = w.nextNode()); ) if (ok(t)) out.push(t);
+  });
+  return out;
+}
+function posTexto(lista, no, off) {
+  const r = document.createRange();
+  r.setStart(no, off);
+  let n = 0;
+  for (const t of lista) {
+    if (t === no) return n + off;
+    if (r.comparePoint(t, t.length) > 0) break;
+    n += t.length;
+  }
+  return n;
+}
+/* troca no editor só os blocos que mudaram; o cursor fica no mesmo ponto do texto.
+   Devolve false quando o bloco do cursor está no meio de uma palavra do teclado do celular. */
+function trocarBlocos(html) {
+  const ed = ED(),
+    box = document.createElement("div");
+  box.innerHTML = html;
+  const vazio = (n) =>
+    n.nodeType === 1 && n.tagName === "P" && !n.textContent.trim() && !n.querySelector("img,a");
+  // a linha "Enviando…" e as linhas vazias do fim ficam onde estão
+  const cur = [...ed.childNodes].filter((n) => !(n.nodeType === 1 && n.matches("p.uploading")));
+  while (cur.length && vazio(cur[cur.length - 1])) cur.pop();
+  const nov = [...box.childNodes],
+    chave = (n) => (n.nodeType === 1 ? sanitize(n.outerHTML) : n.nodeValue),
+    t = trecho(cur.map(chave), nov.map(chave)),
+    sai = cur.slice(t.de, t.ate),
+    entra = nov.slice(t.de, nov.length - (cur.length - t.ate));
+  if (!sai.length && !entra.length) return true;
+  const sel = getSelection(),
+    dentro = (no) => !!no && sai.some((b) => b === no || b.contains(no)),
+    temSel = sel.rangeCount > 0 && ed.contains(sel.anchorNode),
+    aIn = temSel && dentro(sel.anchorNode),
+    fIn = temSel && dentro(sel.focusNode);
+  if ((aIn || fIn) && compondo) return false;
+  const antes = textosDe(sai),
+    ta = antes.map((x) => x.data).join(""),
+    pa = aIn ? posTexto(antes, sel.anchorNode, sel.anchorOffset) : 0,
+    pf = fIn ? posTexto(antes, sel.focusNode, sel.focusOffset) : 0,
+    ref = sai.length
+      ? sai[sai.length - 1].nextSibling
+      : cur[t.ate] || (t.de ? cur[t.de - 1].nextSibling : ed.firstChild);
+  sai.forEach((n) => n.remove());
+  entra.forEach((n) => ed.insertBefore(n, ref));
+  tidyEditor();
+  if (!aIn && !fIn) return true;
+  // o cursor estava num bloco trocado: volta para o mesmo ponto do texto
+  const depois = textosDe(entra),
+    td = depois.map((x) => x.data).join("");
+  let p = 0,
+    s = 0;
+  while (p < ta.length && p < td.length && ta[p] === td[p]) p++;
+  while (s < ta.length - p && s < td.length - p && ta[ta.length - 1 - s] === td[td.length - 1 - s]) s++;
+  const mover = (c) =>
+    c <= p ? c : c >= ta.length - s ? c + td.length - ta.length : Math.min(c, td.length - s);
+  const ponto = (c) => {
+    for (const x of depois) {
+      if (c <= x.length) return [x, c];
+      c -= x.length;
+    }
+    const alvo = entra.find((n) => n.nodeType === 1) || ref || ed.lastChild;
+    return alvo && alvo.parentNode ? [alvo, 0] : [ed, 0];
+  };
+  const [an, ao] = aIn ? ponto(mover(pa)) : [sel.anchorNode, sel.anchorOffset],
+    [fn, fo] = fIn ? ponto(mover(pf)) : [sel.focusNode, sel.focusOffset];
+  try {
+    sel.setBaseAndExtent(an, ao, fn, fo);
+    if (sel.rangeCount) lastRange = sel.getRangeAt(0).cloneRange();
+  } catch (e) {}
+  return true;
 }
 
 /* eventos do editor */
@@ -1289,9 +1478,11 @@ ed0.addEventListener("drop", (e) => {
 });
 ed0.addEventListener("blur", (e) => {
   if (repTimer) flushReport();
-  // com o cursor no texto, o que chega de outro aparelho espera; quando o cursor sai do relatório, atualiza
   if (!e.relatedTarget?.closest?.("#drawer, .pop")) setTimeout(refreshEditorFromData, 0);
 });
+// teclado do celular escolhendo a palavra: o bloco do cursor não é trocado até ela terminar
+ed0.addEventListener("compositionstart", () => (compondo = true));
+ed0.addEventListener("compositionend", () => (compondo = false));
 $("#drawer").addEventListener("scroll", () => {
   $("#imgbar").hidden = true;
   $("#linkpop").hidden = true;
@@ -1320,6 +1511,8 @@ function openReport(id, quiet, item) {
   const n = get(id);
   if (!n) return;
   if (reportId) flushReport();
+  clearTimeout(sincTimer);
+  versoes.clear();
   reportId = id;
   reportItem = item || null;
   selected = null;
@@ -1372,12 +1565,19 @@ function fillDrawer() {
   }
   if (ro) $("#rep-status").textContent = `Só leitura. ${avisoTravado(n)}`;
 }
-/* chegou mudança de outro aparelho: atualiza o relatório aberto, se ninguém está escrevendo nele agora */
+/* chegou mudança de outro aparelho: entra no relatório aberto na hora, mesmo com o cursor no texto */
 function refreshEditorFromData() {
   if (!reportId) return;
   fillDrawer();
-  if (!reportId || repTimer || document.activeElement === ED()) return;
-  if (canon(docHtml(repData())) !== loadedHtml) loadEditor();
+  clearTimeout(sincTimer);
+  const d = reportId && repData();
+  if (!d || canon(docHtml(d)) === loadedHtml) return;
+  if (repTimer) return; // quem está digitando salva daqui a pouco e junta as duas coisas
+  if (document.querySelector(".pop:not([hidden])")) {
+    sincTimer = setTimeout(refreshEditorFromData, 800); // com um menu do editor aberto, espera ele fechar
+    return;
+  }
+  flushReport();
 }
 function closeReport() {
   flushReport();
