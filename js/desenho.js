@@ -129,8 +129,9 @@ function render() {
                   .map(([k, v]) => `<option value="${k}" ${k === st ? "selected" : ""}>${v}</option>`)
                   .join("")}</select>`
           }
-          <button data-act="report" data-id="${n.id}">Relatório</button>
-          ${isList(n) ? "" : `<button data-act="list" data-id="${n.id}">+ Lista</button><button data-act="agenda" data-id="${n.id}">+ Agenda</button>`}
+          <button data-act="report" data-id="${n.id}">${isInfo(n) ? "Editar texto" : "Relatório"}</button>
+          ${isInfo(n) ? `<button data-act="wide" data-id="${n.id}">${n.wide ? "Mais estreito" : "Mais largo"}</button>` : ""}
+          ${isList(n) ? "" : `<button data-act="list" data-id="${n.id}">+ Lista</button><button data-act="agenda" data-id="${n.id}">+ Agenda</button><button data-act="info" data-id="${n.id}">+ Informativo</button>`}
         </div>
         <div class="row">
           ${sub || isList(n) ? "" : `<button data-act="up" data-id="${n.id}" ${si <= 0 ? "disabled" : ""} title="Diminuir o número do passo">◀ Nº</button><button data-act="down" data-id="${n.id}" ${si >= sib.length - 1 ? "disabled" : ""} title="Aumentar o número do passo">Nº ▶</button>`}
@@ -157,6 +158,15 @@ function render() {
         : st === "blocked"
           ? `<span class="stp blocked">Travado</span>`
           : "";
+    if (isInfo(n)) {
+      const corpo = canon(docHtml(n));
+      h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode infonode${n.wide ? " wide" : ""}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">
+        <div class="lhead"><span>Informativo · ${WHO[n.who || "all"]}</span><span class="right"><button class="info-ed" data-act="report" data-id="${n.id}">${lock ? "Ler" : "Editar"}</button></span></div>
+        <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="Título do informativo" aria-label="Título do informativo">${esc(n.title)}</textarea>
+        ${corpo ? `<div class="ed info-corpo" data-id="${n.id}">${corpo}</div>` : lock ? "" : `<button class="add-li" data-act="report" data-id="${n.id}">+ Escrever o informativo</button>`}
+        ${tools}</div>`;
+      return;
+    }
     if (isAgenda(n)) {
       h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode agendanode" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">${agendaRows(n, rep)}${tools}</div>`;
       return;
@@ -182,6 +192,7 @@ function render() {
       : `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><div class="nhead"><span>Passo ${num[n.id]} · ${WHO[n.who || "all"]}</span><span class="right">${stp}${rep}${ck}</span></div>${ta}${tools}</div>`;
   });
   $("#world").innerHTML = h;
+  document.querySelectorAll("#world .info-corpo").forEach(showAssets);
   applyView();
   if (reportId) fillDrawer();
 

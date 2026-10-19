@@ -249,6 +249,12 @@ document.addEventListener("click", (e) => {
     case "agenda":
       addListNode(id, "agenda");
       break;
+    case "info":
+      addListNode(id, "info");
+      break;
+    case "wide":
+      write("nodes", id, { wide: !get(id).wide });
+      break;
     case "mtg-add":
       openMeeting(id, null);
       break;
@@ -330,4 +336,9 @@ document.addEventListener("change", (e) => {
     }
   }
   if (t.dataset.map) renameMap(t.dataset.map, t.value);
+});
+// dois cliques no texto do informativo abrem para editar
+document.addEventListener("dblclick", (e) => {
+  const c = e.target.closest(".info-corpo");
+  if (c && !e.target.closest("a")) openReport(c.dataset.id);
 });

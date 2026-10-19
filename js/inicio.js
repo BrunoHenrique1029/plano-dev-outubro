@@ -61,6 +61,7 @@ $("#q").addEventListener("input", (e) => {
 $("#add-main").onclick = addMain;
 $("#add-list").onclick = () => addListNode(null);
 $("#add-agenda").onclick = () => addListNode(null, "agenda");
+$("#add-info").onclick = () => addListNode(null, "info");
 $("#add-first").onclick = addMain;
 $("#undo").onclick = undo;
 $("#z-in").onclick = () => zoom(1.2);

@@ -469,6 +469,79 @@ document.addEventListener("selectionchange", () => {
     lastRange = r.cloneRange();
     syncBar();
   }
+  syncTabbar();
+});
+
+/* barrinha da tabela: com o cursor numa célula, dá para pôr e tirar linhas e colunas */
+let tabCell = null;
+function celulaAtual() {
+  const r = liveRange(),
+    n = r && (r.startContainer.nodeType === 3 ? r.startContainer.parentNode : r.startContainer),
+    c = n?.closest?.("td,th");
+  return c && inEd(c) ? c : null;
+}
+function syncTabbar() {
+  const bar = $("#tabbar"),
+    c = !$("#drawer").hidden && ED().isContentEditable ? celulaAtual() : null;
+  if (!c) {
+    if (!bar.matches(":hover, :focus-within")) bar.hidden = true;
+    return;
+  }
+  tabCell = c;
+  const t = c.closest("table").getBoundingClientRect(),
+    linha = c.parentElement.getBoundingClientRect();
+  bar.hidden = false;
+  const h = bar.offsetHeight,
+    cima = linha.top - h - 4 >= Math.max(8, $("#drawer").getBoundingClientRect().top);
+  placePop(bar, { left: t.left, top: linha.top, bottom: cima ? linha.top - h - 10 : linha.bottom });
+}
+function mexerTabela(acao) {
+  const c = celulaAtual() || (tabCell?.isConnected && inEd(tabCell) ? tabCell : null);
+  if (!c) return;
+  const tr = c.parentElement,
+    tabela = c.closest("table"),
+    col = [...tr.children].indexOf(c),
+    linhas = [...tabela.querySelectorAll("tr")],
+    nova = (tag) => {
+      const x = document.createElement(tag);
+      x.innerHTML = "<br>";
+      return x;
+    };
+  let foco = c;
+  if (acao === "linha") {
+    const t2 = document.createElement("tr");
+    [...tr.children].forEach(() => t2.append(nova("td")));
+    tr.after(t2);
+    foco = t2.children[col];
+  } else if (acao === "coluna") {
+    linhas.forEach((l) => {
+      const ref = l.children[Math.min(col, l.children.length - 1)],
+        x = nova(ref ? ref.tagName : "TD");
+      if (ref) ref.after(x);
+      else l.append(x);
+    });
+    foco = tr.children[col + 1];
+  } else if (acao === "sem-linha") {
+    foco = (tr.nextElementSibling || tr.previousElementSibling)?.children[col] || null;
+    tr.remove();
+  } else if (acao === "sem-coluna") {
+    linhas.forEach((l) => l.children[col]?.remove());
+    foco = tr.children[Math.min(col, tr.children.length - 1)] || null;
+  }
+  // sem linhas ou sem colunas, a tabela some
+  if (!tabela.querySelector("td,th")) {
+    foco = tabela.nextElementSibling;
+    tabela.remove();
+  }
+  tidyEditor();
+  if (foco?.isConnected) caretInto(foco, true);
+  edChanged();
+  syncTabbar();
+}
+$("#tabbar").addEventListener("mousedown", (e) => e.preventDefault());
+$("#tabbar").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-tbl]");
+  if (b) mexerTabela(b.dataset.tbl);
 });
 
 /* blocos */
@@ -685,7 +758,7 @@ function caretRect() {
 function hidePops() {
   linkSel = null;
   linkCard = false;
-  ["#slash", "#colors", "#linkbar", "#imgbar", "#linkpop"].forEach((s) => {
+  ["#slash", "#colors", "#linkbar", "#imgbar", "#linkpop", "#tabbar"].forEach((s) => {
     const e = $(s);
     if (e) e.hidden = true;
   });
@@ -996,6 +1069,7 @@ function flushReport() {
    pedaço, fica a de quem ainda está digitando. Cada gravação leva a assinatura da versão de onde saiu (reportBase). */
 const versoes = new Map();
 let compondo = false,
+  compondoEm = 0,
   sincTimer = null;
 function assinar(html) {
   let h = 0x811c9dc5;
@@ -1122,7 +1196,7 @@ function trocarBlocos(html) {
     temSel = sel.rangeCount > 0 && ed.contains(sel.anchorNode),
     aIn = temSel && dentro(sel.anchorNode),
     fIn = temSel && dentro(sel.focusNode);
-  if ((aIn || fIn) && compondo) return false;
+  if ((aIn || fIn) && compondo && Date.now() - compondoEm < 3000) return false;
   const antes = textosDe(sai),
     ta = antes.map((x) => x.data).join(""),
     pa = aIn ? posTexto(antes, sel.anchorNode, sel.anchorOffset) : 0,
@@ -1477,20 +1551,30 @@ ed0.addEventListener("drop", (e) => {
   insertFiles(fs);
 });
 ed0.addEventListener("blur", (e) => {
+  compondo = false;
   if (repTimer) flushReport();
   if (!e.relatedTarget?.closest?.("#drawer, .pop")) setTimeout(refreshEditorFromData, 0);
 });
 // teclado do celular escolhendo a palavra: o bloco do cursor não é trocado até ela terminar
-ed0.addEventListener("compositionstart", () => (compondo = true));
+// (se o teclado não avisar que terminou, depois de 3 s parado ele troca assim mesmo)
+ed0.addEventListener("compositionstart", () => {
+  compondo = true;
+  compondoEm = Date.now();
+});
+ed0.addEventListener("compositionupdate", () => (compondoEm = Date.now()));
 ed0.addEventListener("compositionend", () => (compondo = false));
+// trocou de aplicativo ou bloqueou o celular logo depois de digitar: salva na hora
+document.addEventListener("visibilitychange", () => document.hidden && repTimer && flushReport());
+addEventListener("pagehide", () => repTimer && flushReport());
 $("#drawer").addEventListener("scroll", () => {
   $("#imgbar").hidden = true;
   $("#linkpop").hidden = true;
+  syncTabbar();
   $("#colors").hidden = true;
   $("#linkbar").hidden = true;
 });
 document.addEventListener("mousedown", (e) => {
-  if (!e.target.closest("#slash,#colors,#linkbar,#imgbar,#linkpop,#edbar,#rep-ed")) {
+  if (!e.target.closest("#slash,#colors,#linkbar,#imgbar,#linkpop,#tabbar,#edbar,#rep-ed")) {
     ["#colors", "#linkbar", "#imgbar", "#linkpop"].forEach((s) => ($(s).hidden = true));
   }
 });
@@ -1531,6 +1615,8 @@ function openReport(id, quiet, item) {
     caretInto(ed.lastElementChild || ed);
   }
 }
+const PH_REL = $("#rep-ed").dataset.ph,
+  PH_INFO = "Escreva o informativo: textos, instruções e tabelas. Digite / para ver os blocos.";
 function fillDrawer() {
   const n = get(reportId);
   if (!n) {
@@ -1544,12 +1630,18 @@ function fillDrawer() {
   }
   $("#rep-title").textContent = it
     ? it.text || (isAgenda(n) ? "Reunião" : "Item sem nome")
-    : n.title || (isAgenda(n) ? "Agenda" : "Plano sem nome");
+    : n.title || (isAgenda(n) ? "Agenda" : isInfo(n) ? "Informativo sem título" : "Plano sem nome");
   $("#rep-who").textContent = it
     ? isAgenda(n)
       ? `Reunião · ${dayLabel(it.date)}${it.time ? " · " + it.time : ""}${it.with ? " · com " + it.with : ""}`
       : `Item da lista ${n.title ? "“" + n.title + "”" : ""} · ${it.done ? "Feito" : "A fazer"}`
-    : WHO[n.who || "all"] + (isList(n) ? "" : " · " + STATUS[statusOf(n)]);
+    : (isInfo(n) ? "Informativo · " : "") +
+      WHO[n.who || "all"] +
+      (isList(n) ? "" : " · " + STATUS[statusOf(n)]);
+  const info = !it && isInfo(n);
+  $("#drawer").classList.toggle("info", info);
+  $("#rep-k").hidden = info;
+  ED().dataset.ph = info ? PH_INFO : PH_REL;
   $("#rep-edited").textContent = editedLine(n);
   document
     .querySelectorAll('#edbar [data-cmd="image"], #edbar [data-cmd="file"]')
@@ -1573,7 +1665,7 @@ function refreshEditorFromData() {
   const d = reportId && repData();
   if (!d || canon(docHtml(d)) === loadedHtml) return;
   if (repTimer) return; // quem está digitando salva daqui a pouco e junta as duas coisas
-  if (document.querySelector(".pop:not([hidden])")) {
+  if (document.querySelector(".pop:not([hidden]):not(#tabbar)")) {
     sincTimer = setTimeout(refreshEditorFromData, 800); // com um menu do editor aberto, espera ele fechar
     return;
   }

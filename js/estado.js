@@ -45,7 +45,8 @@ const kids = (p) =>
     .filter((n) => parentOf(n) === p)
     .sort(byOrder);
 const isAgenda = (n) => n?.kind === "agenda";
-const isList = (n) => n?.kind === "list" || isAgenda(n); // lista e agenda são blocos com itens: sem status e sem sub-planos
+const isInfo = (n) => n?.kind === "info"; // informativo: título e um texto com tabelas, instruções…
+const isList = (n) => n?.kind === "list" || isAgenda(n) || isInfo(n); // lista, agenda e informativo são blocos: sem status e sem sub-planos
 const isShown = (n) => {
   let p = parentOf(n);
   while (p) {
@@ -71,7 +72,13 @@ const travado = (n) => !!n && who !== "all" && (n.who || "all") !== who;
 const DE = { all: "de Todos", D: "do Dev", A: "da Aquisição", C: "do Conteúdo" };
 function avisoTravado(n) {
   const w = n.who || "all",
-    oque = isAgenda(n) ? "Esta agenda" : isList(n) ? "Esta lista" : "Este plano";
+    oque = isAgenda(n)
+      ? "Esta agenda"
+      : isInfo(n)
+        ? "Este informativo"
+        : isList(n)
+          ? "Esta lista"
+          : "Este plano";
   return `${oque} é ${DE[w]}. Para mexer, marque ${w === "all" ? "" : WHO[w] + " ou "}Todos no filtro.`;
 }
 let aviso = "",

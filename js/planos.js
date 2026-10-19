@@ -179,7 +179,8 @@ async function addSub(pid) {
 async function addListNode(pid, kind = "list") {
   const id = rid(),
     p = pid ? get(pid) : null,
-    ag = kind === "agenda";
+    ag = kind === "agenda",
+    info = kind === "info";
   if (p && p.collapsed) {
     begin();
     await write("nodes", pid, { collapsed: false });
@@ -208,7 +209,7 @@ async function addListNode(pid, kind = "list") {
   }
   const who0 = p && p.who && p.who !== "all" ? p.who : who === "all" ? "D" : who;
   const first = { id: rid(), text: "", done: false };
-  pendingFocus = ag ? null : "li-" + first.id;
+  pendingFocus = ag ? null : info ? id : "li-" + first.id;
   selected = null;
   const ks = pid ? kids(pid) : [];
   begin();
@@ -221,7 +222,7 @@ async function addListNode(pid, kind = "list") {
     order: ks.length ? (ks[ks.length - 1].order || 0) + 1 : 1,
     x: Math.round(pos.x),
     y: Math.round(pos.y),
-    list: ag ? [] : [first],
+    ...(info ? {} : { list: ag ? [] : [first] }),
   });
   await resolveLayout(id);
   commit();
@@ -229,7 +230,7 @@ async function addListNode(pid, kind = "list") {
     openMeeting(id, null);
     return;
   }
-  const el = document.querySelector(`[data-key="li-${first.id}"]`);
+  const el = document.querySelector(`[data-key="${info ? id : "li-" + first.id}"]`);
   if (el) el.focus({ preventScroll: true });
 }
 
@@ -293,6 +294,7 @@ async function setStatus(id, st) {
 /* Organizar: passos em ordem da esquerda para a direita. Embaixo de cada passo, os sub-planos dele lado a lado;
    o que está dentro de um sub-plano fica empilhado embaixo dele, recuado por nível.
    O espaço é medido pelo tamanho real de cada plano, então nada fica em cima de nada.
+   Entre o grupo de um passo (com o que está ligado nele) e o do passo seguinte fica um espaço bem maior.
    Listas soltas viram colunas no fim. Ramificações fechadas também são arrumadas, para aparecerem certas ao abrir. */
 async function tidy() {
   const size = (id) => {
@@ -300,6 +302,7 @@ async function tidy() {
     return { w: el ? el.offsetWidth : MAIN_W, h: el ? el.offsetHeight : 80 };
   };
   const GAPX = 90,
+    GAPG = 260,
     GAPC = 34,
     GAPY = 22,
     HUBY = 34,
@@ -329,8 +332,9 @@ async function tidy() {
     go(n, 0, false);
     return { w, h: y, rel };
   };
+  const aberto = (t) => !!t && !t.collapsed && kids(t.id).length > 0;
   let x = 40;
-  for (const t of tops) {
+  for (const [i, t] of tops.entries()) {
     const ts = size(t.id),
       ks = kids(t.id);
     const cols = ks.map((k) => ({ k, ...stack(k) }));
@@ -343,7 +347,8 @@ async function tidy() {
       for (const [id, r] of Object.entries(c.rel)) pos[id] = { x: cx + r.x, y: ry + r.y };
       cx += c.w + GAPC;
     }
-    x += blockW + GAPX;
+    // o grupo de um passo (com o que está ligado nele) fica bem longe do grupo do passo seguinte
+    x += blockW + (aberto(t) || aberto(tops[i + 1]) ? GAPG : GAPX);
   }
   const old = {};
   here().forEach((n) => (old[n.id] = { x: n.x || 0, y: n.y || 0 }));

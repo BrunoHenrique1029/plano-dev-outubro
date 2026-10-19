@@ -69,8 +69,10 @@
   }
   .controls > .grp:first-child {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    grid-template-areas: "plano plano lista lista agenda agenda" "busca busca busca busca busca desfazer";
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-areas:
+      "plano plano lista lista agenda agenda info info"
+      "busca busca busca busca busca busca busca desfazer";
     gap: 8px;
   }
   .controls > .grp:first-child > * {
@@ -84,6 +86,9 @@
   }
   #add-agenda {
     grid-area: agenda;
+  }
+  #add-info {
+    grid-area: info;
   }
   #undo {
     grid-area: desfazer;
@@ -207,13 +212,45 @@
     font-size: 16px;
     min-height: 260px;
   }
+  /* tabela larga no celular: rola para o lado em vez de quebrar as palavras no meio */
+  .drawer .ed {
+    overflow-x: auto;
+  }
+  .drawer .ed table {
+    table-layout: auto;
+  }
+  .drawer .ed td,
+  .drawer .ed th {
+    min-width: 96px;
+    overflow-wrap: break-word;
+  }
+}
+.so-xs {
+  display: none;
 }
 @media (max-width: 420px) {
   .hide-xs {
     display: none;
   }
+  .so-xs {
+    display: inline;
+  }
   .btn {
     padding: 8px 11px;
+  }
+  /* quatro botões de criar na mesma linha */
+  .controls > .grp:first-child > .btn {
+    padding-inline: 4px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+}
+@media (max-width: 350px) {
+  .controls > .grp:first-child {
+    grid-template-areas:
+      "plano plano plano plano lista lista lista lista"
+      "agenda agenda agenda agenda info info info info"
+      "busca busca busca busca busca busca busca desfazer";
   }
 }
 @media (max-width: 380px) {

@@ -685,3 +685,70 @@
 .node.lock .del {
   display: none;
 }
+
+/* informativo no mapa: título e o texto (com tabelas) escrito no editor do relatório */
+.node.infonode {
+  width: 460px;
+}
+.node.infonode.wide {
+  width: 860px;
+}
+.info-ed {
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  border-radius: 4px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.info-ed:hover {
+  border-color: var(--c);
+  color: var(--c);
+}
+.node .ed.info-corpo {
+  flex: none;
+  min-height: 0;
+  padding: 2px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: inherit;
+}
+.info-corpo p {
+  min-height: 0;
+  margin: 0 0 6px;
+}
+.info-corpo h1,
+.info-corpo h2,
+.info-corpo h3 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 12px 0 4px;
+}
+.info-corpo h1 {
+  font-size: 21px;
+}
+.info-corpo h2 {
+  font-size: 18px;
+}
+.info-corpo h3 {
+  font-size: 16px;
+}
+.info-corpo table {
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 8px 0 4px;
+}
+.info-corpo td,
+.info-corpo th {
+  padding: 6px 8px;
+}
+/* a primeira linha da tabela do informativo é o cabeçalho */
+.info-corpo tr:first-child > *,
+.drawer.info .ed tr:first-child > * {
+  background: var(--bg);
+  font-weight: 600;
+}

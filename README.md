@@ -31,9 +31,22 @@ No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 
 **Modo claro ou escuro:** o botão com o ícone de lua (ou sol), no topo, troca o modo. A escolha fica guardada no navegador.
 
+## Informativo
+
+Para textos e instruções que todo mundo precisa ler: explicações, regras, tabelas. Crie com **+ Novo informativo** ou, para ficar ligado a um passo, com **+ Informativo** no menu do passo.
+
+- Clique em **Editar** no cartão (ou dois cliques no texto) para escrever. O editor é o mesmo do relatório, com títulos, listas, tabelas, imagens e links.
+- A primeira linha de cada tabela do informativo vira o cabeçalho. Com o cursor numa tabela aparece a barrinha **+ Linha, + Coluna, − Linha, − Coluna**. Também dá para colar uma tabela copiada de outro lugar.
+- No menu do informativo, **Mais largo** deixa o cartão quase com o dobro da largura, bom para tabelas grandes.
+- No celular, tabelas largas rolam para o lado dentro do editor.
+
+## Organizar
+
+O botão **Organizar** põe os passos da esquerda para a direita, com o que está ligado a cada passo embaixo dele. Entre o grupo de um passo e o do passo seguinte fica um espaço bem maior, para ver de qual passo é cada coisa.
+
 ## Filtro por pessoa
 
-Com o filtro em uma pessoa só (Dev, Aquisição ou Conteúdo), dá para mexer apenas nos planos, listas e agendas dela. Os outros, inclusive os de **Todos**, ficam apagados e só para ver: não dá para editar, arrastar, conectar nem apagar, e o relatório deles abre só para leitura. Para mexer em tudo, deixe o filtro em **Todos**.
+Com o filtro em uma pessoa só (Dev, Aquisição ou Conteúdo), dá para mexer apenas nos planos, listas, agendas e informativos dela. Os outros, inclusive os de **Todos**, ficam apagados e só para ver: não dá para editar, arrastar, conectar nem apagar, e o relatório deles abre só para leitura. Para mexer em tudo, deixe o filtro em **Todos**.
 
 ## Links nos relatórios
 
@@ -83,7 +96,7 @@ Para publicar num repositório novo:
 Bom saber:
 
 - Qualquer pessoa com o endereço abre o site, mas só vê o mapa quem entra com um e-mail liberado. No GitHub grátis, o código (com o mapa inicial de `js/dados-iniciais.js`) fica público.
-- Depois de publicar uma mudança, aperte **Ctrl+F5** no site para o navegador pegar os arquivos novos.
+- Depois de publicar uma mudança, quem está com o site aberto vê o aviso **"Saiu uma versão nova do site"** com o botão **Atualizar** (aparece ao voltar para a aba ou em até 3 minutos). Sem o botão, o navegador pode continuar com os arquivos antigos por até 10 minutos, mesmo recarregando. No PC, **Ctrl+F5** também pega a versão nova.
 
 ## Mapa dos arquivos
 
@@ -112,6 +125,7 @@ js/
   desenho.js            desenha o mapa, as setas e o zoom
   interacao.js          arrastar, pinça no celular e cliques
   inicio.js             teclado, botões e começo da página
+  versao.js             avisa quando sai uma versão nova do site
 assets/                 ícone e fontes (com as licenças)
 ferramentas/            de onde sai o js/vendor/firebase.js (npm run vendor)
 .vscode/                extensões recomendadas e formatação ao salvar

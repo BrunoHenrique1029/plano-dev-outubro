@@ -25,8 +25,9 @@
           <h1>Plano Dev Autônomo Outubro</h1>
           <p class="lead">
             Arraste os planos para onde quiser e clique em um plano para ver as opções.<span class="more">
-              Use "+ Nova lista" para colocar uma lista com marcações no mapa e "+ Nova agenda" para marcar
-              reuniões. No ícone de documento você abre o relatório, com anotações e anexos.</span
+              Use "+ Nova lista" para colocar uma lista com marcações no mapa, "+ Nova agenda" para marcar
+              reuniões e "+ Novo informativo" para textos e instruções. No ícone de documento você abre o
+              relatório, com anotações e anexos.</span
             >
           </p>
         </div>
@@ -71,6 +72,9 @@
           <button class="btn" id="add-agenda" aria-label="Nova agenda">
             + <span class="hide-xs">Nova </span>agenda
           </button>
+          <button class="btn" id="add-info" aria-label="Novo informativo">
+            + <span class="hide-xs">Novo informativo</span><span class="so-xs">Info</span>
+          </button>
           <button class="btn" id="undo" disabled title="Desfazer (Ctrl+Z)" aria-label="Desfazer">
             ↶<span class="hide-sm">Desfazer</span>
           </button>
@@ -114,7 +118,7 @@
       <aside class="drawer" id="drawer" hidden aria-label="Relatório">
         <header>
           <div>
-            <div class="k">Relatório · <span id="rep-who"></span></div>
+            <div class="k"><span id="rep-k">Relatório · </span><span id="rep-who"></span></div>
             <h2 id="rep-title"></h2>
           </div>
           <span class="hbtns"
@@ -188,6 +192,11 @@
         <a id="lp-open" class="lp-open" href="#" target="_blank" rel="noopener">Abrir ↗</a
         ><span class="lp-url" id="lp-url"></span><button data-lp="edit">Editar</button
         ><button data-lp="card">Cartão</button><button data-lp="rm" class="danger">Remover</button>
+      </div>
+      <div class="pop imgbar" id="tabbar" hidden>
+        <button data-tbl="linha">+ Linha</button><button data-tbl="coluna">+ Coluna</button
+        ><button data-tbl="sem-linha" class="danger">− Linha</button
+        ><button data-tbl="sem-coluna" class="danger">− Coluna</button>
       </div>
       <div class="pop imgbar" id="imgbar" hidden>
         <button data-size="s">Pequena</button><button data-size="m">Média</button
@@ -285,6 +294,11 @@
       </footer>
     </div>
 
+    <div class="versao-nova" id="versao-nova" role="status" hidden>
+      <span>Saiu uma versão nova do site.</span
+      ><button class="btn primary" id="versao-atualizar" type="button">Atualizar</button>
+    </div>
+
     <!-- A ordem importa: cada arquivo usa o que os anteriores criaram. -->
     <script src="js/servicos-locais.js"></script>
     <script src="js/nuvem-config.js"></script>
@@ -298,5 +312,6 @@
     <script src="js/desenho.js"></script>
     <script src="js/interacao.js"></script>
     <script src="js/inicio.js"></script>
+    <script src="js/versao.js"></script>
   </body>
 </html>
