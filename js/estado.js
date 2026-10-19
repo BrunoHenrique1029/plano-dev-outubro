@@ -73,6 +73,9 @@ const isShown = (n) => {
 };
 const descCount = (id) => kids(id).reduce((t, k) => t + 1 + descCount(k.id), 0);
 const steps = (p) => kids(p).filter((n) => !isList(n));
+// com quem o plano divide a ordem: o que está ligado no mesmo plano de cima (sub-planos, listas, agendas e
+// informativos juntos); sem plano de cima, os passos entre si e os blocos soltos entre si
+const irmaos = (n) => (parentOf(n) ? kids(parentOf(n)) : isList(n) ? kids(null).filter(isList) : steps(null));
 const isDesc = (id, anc) => {
   let n = get(id);
   while (n && parentOf(n)) {

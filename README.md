@@ -45,6 +45,8 @@ Para textos e instruções que todo mundo precisa ler: explicações, regras, ta
 
 O botão **Organizar** põe os passos da esquerda para a direita, com o que está ligado a cada passo embaixo dele. Entre o grupo de um passo e o do passo seguinte fica um espaço bem maior, para ver de qual passo é cada coisa.
 
+A ordem segue o que você escolher. Nos passos, **◀ Nº** e **Nº ▶** mudam o número do passo. Nos sub-planos, listas, agendas e informativos, **◀ Antes** e **Depois ▶** passam o bloco para antes ou depois dos outros ligados no mesmo plano de cima (ele troca de lugar com o vizinho na hora, levando junto o que está dentro dele). Informativos, listas e agendas soltos, sem plano de cima, mudam de ordem entre eles.
+
 ## Filtro por pessoa
 
 Com o filtro em uma pessoa só (Dev, Aquisição ou Conteúdo), dá para mexer apenas nos planos, listas, agendas e informativos dela. Os outros, inclusive os de **Todos**, ficam apagados e só para ver: não dá para editar, arrastar, conectar nem apagar, e o relatório deles abre só para leitura. Para mexer em tudo, deixe o filtro em **Todos**.

@@ -291,6 +291,12 @@ document.addEventListener("click", (e) => {
     case "down":
       shift(id, 1);
       break;
+    case "antes":
+      moverNaOrdem(id, -1);
+      break;
+    case "depois":
+      moverNaOrdem(id, 1);
+      break;
     case "sub":
       addSub(id);
       break;

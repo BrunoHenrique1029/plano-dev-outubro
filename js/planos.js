@@ -287,6 +287,57 @@ async function shift(id, dir) {
   commit();
   render();
 }
+/* "◀ Antes" e "Depois ▶": muda a ordem entre os irmãos do mesmo plano de cima (é a ordem que o Organizar segue)
+   e os dois trocam de lugar no mapa, cada um com o que está ligado nele */
+async function moverNaOrdem(id, dir) {
+  const n = get(id),
+    sib = irmaos(n),
+    i = sib.findIndex((x) => x.id === id),
+    j = i + dir;
+  if (i < 0 || j < 0 || j >= sib.length) return;
+  const nova = [...sib];
+  [nova[i], nova[j]] = [nova[j], nova[i]];
+  const desc = (m) => kids(m.id).flatMap((k) => [k, ...desc(k)]);
+  const caixa = (m) =>
+    [m, ...desc(m)]
+      .filter(isShown)
+      .map((q) => {
+        const el = document.querySelector(`.node[data-id="${q.id}"]`),
+          x = q.x || 0,
+          y = q.y || 0;
+        return { x0: x, y0: y, x1: x + (el ? el.offsetWidth : MAIN_W), y1: y + (el ? el.offsetHeight : 80) };
+      })
+      .reduce((r, q) => ({
+        x0: Math.min(r.x0, q.x0),
+        y0: Math.min(r.y0, q.y0),
+        x1: Math.max(r.x1, q.x1),
+        y1: Math.max(r.y1, q.y1),
+      }));
+  // quem fica na frente agora vai para o lugar do outro (lado a lado: esquerda; empilhados: em cima)
+  const frente = nova[Math.min(i, j)],
+    tras = nova[Math.max(i, j)],
+    F = caixa(frente),
+    T = caixa(tras),
+    deitado = Math.abs((F.x0 + F.x1 - T.x0 - T.x1) / 2) >= Math.abs((F.y0 + F.y1 - T.y0 - T.y1) / 2),
+    eixo = deitado ? "x" : "y",
+    trocar = deitado ? F.x0 > T.x0 : F.y0 > T.y0;
+  begin();
+  for (const [k, m] of nova.entries())
+    if (m.order !== k + 1) await write("nodes", m.id, { order: k + 1 }, { silent: true });
+  if (trocar) {
+    const d0 = eixo + "0",
+      d1 = eixo + "1",
+      passos = [
+        [frente, T[d0] - F[d0]],
+        [tras, F[d1] - T[d1]],
+      ];
+    for (const [m, d] of passos)
+      for (const q of [m, ...desc(m)])
+        await write("nodes", q.id, { [eixo]: Math.round((q[eixo] || 0) + d) }, { silent: true });
+  }
+  commit();
+  render();
+}
 async function remove(id) {
   confirmDel = null;
   selected = null;
