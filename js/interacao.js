@@ -78,7 +78,8 @@ board.addEventListener("pointerup", fingerUp, true);
 board.addEventListener("pointercancel", fingerUp, true);
 board.addEventListener("pointerdown", (e) => {
   if (pinch) return;
-  if (e.target.closest(".zoom,.banner,.tools,textarea,select,button,input,a")) return;
+  // a faixa do topo e o nome de um plano travado também arrastam o quadro
+  if (e.target.closest(".zoom,.tools,textarea:not([readonly]),select,button,input,a")) return;
   const no = e.target.closest(".node"),
     // plano travado não sai do lugar: arrasta o quadro. Comentando, o clique é para pôr o comentário
     el = no && !comentando && !travado(get(no.dataset.id)) ? no : null;
@@ -158,6 +159,11 @@ board.addEventListener("pointerup", (e) => {
   }
 });
 board.addEventListener("pointercancel", endDrag);
+// arrastar o mapa não começa a selecionar texto; dentro de um campo que dá para escrever, seleciona normal
+board.addEventListener("selectstart", (e) => {
+  const el = e.target.nodeType === 1 ? e.target : e.target.parentElement;
+  if (!el?.closest("textarea:not([readonly]),input")) e.preventDefault();
+});
 board.addEventListener(
   "wheel",
   (e) => {

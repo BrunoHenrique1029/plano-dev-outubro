@@ -1,6 +1,8 @@
 /* Mapa: abas, quadro, planos, listas e botões de abrir e fechar ramificações */
 /* abas */
 .tabs {
+  user-select: none;
+  -webkit-user-select: none;
   display: flex;
   gap: 6px;
   align-items: flex-end;
@@ -104,6 +106,8 @@
   overflow: hidden;
   touch-action: none;
   cursor: grab;
+  user-select: none; /* arrastar o mapa não seleciona os textos e botões */
+  -webkit-user-select: none;
 }
 .board.panning {
   cursor: grabbing;
@@ -714,6 +718,10 @@
 .node.lock,
 .node.lock textarea {
   cursor: default;
+}
+.node.lock textarea {
+  user-select: none; /* plano travado: arrastar em cima do nome move o quadro */
+  -webkit-user-select: none;
 }
 .node.lock .add-li,
 .node.lock .del {
