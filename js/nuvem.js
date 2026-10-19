@@ -74,12 +74,13 @@ const nuvem = (() => {
   /* ---------- situação do salvamento, no rodapé ---------- */
   let gravando = 0,
     falha = null;
-  const pendente = { nodes: false, maps: false };
+  const pendente = { nodes: false, maps: false, comentarios: false };
   function status() {
     if (falha) setSave(falha, "err");
     else if (!navigator.onLine)
       setSave("Sem internet. O que você mudar fica neste aparelho e sobe quando a conexão voltar.", "");
-    else if (gravando || pendente.nodes || pendente.maps || enviando.size) setSave("Salvando na nuvem…", "");
+    else if (gravando || pendente.nodes || pendente.maps || pendente.comentarios || enviando.size)
+      setSave("Salvando na nuvem…", "");
     else setSave("Salvo na nuvem", "ok");
   }
   addEventListener("online", status);
@@ -220,7 +221,8 @@ const nuvem = (() => {
       d = JSON.parse(localStorage.getItem("plano-mapa") || "null");
     } catch (e) {}
     let ns = (Array.isArray(d) ? d : d?.nodes) || [],
-      ms = (Array.isArray(d) ? [] : d?.maps) || [];
+      ms = (Array.isArray(d) ? [] : d?.maps) || [],
+      cs = (Array.isArray(d) ? [] : d?.comentarios) || [];
     if (!ns.length && !ms.length && typeof DADOS_INICIAIS !== "undefined") {
       ns = clone(DADOS_INICIAIS.planos);
       ms = clone(DADOS_INICIAIS.mapas);
@@ -228,6 +230,7 @@ const nuvem = (() => {
     // o que foi editado aqui antes do login passa a mostrar o nome de quem entrou
     const docs = [
       ...ms.map((m) => ["maps", m]),
+      ...cs.map((c) => ["comentarios", c.autorId === "local" ? { ...c, autorId: u.uid, autor: meuNome } : c]),
       ...ns.map((n) => [
         "nodes",
         n.editedBy === "local" ? { ...n, editedBy: u.uid, editedByName: meuNome } : n,
@@ -259,8 +262,10 @@ const nuvem = (() => {
     parar.forEach((f) => f());
     parar = [];
     if (reportId) closeReport();
+    if (comentAberto) fecharPop();
     nodes = [];
     maps = [];
+    comentarios = [];
     undoStack = [];
     $("#undo").disabled = true;
     el("conta").hidden = true;
@@ -337,6 +342,21 @@ const nuvem = (() => {
           if (snap.docChanges().length) {
             maps = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
             render();
+          }
+          status();
+        },
+        erro,
+      ),
+    );
+    parar.push(
+      FB.onSnapshot(
+        FB.collection(db, "comentarios"),
+        { includeMetadataChanges: true },
+        (snap) => {
+          pendente.comentarios = snap.metadata.hasPendingWrites;
+          if (snap.docChanges().length) {
+            comentarios = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            drawPins();
           }
           status();
         },

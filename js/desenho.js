@@ -4,6 +4,7 @@ function applyView() {
   w.style.transform = `translate(${view.tx}px,${view.ty}px) scale(${view.s})`;
   w.style.setProperty("--inv", (1 / view.s).toFixed(3));
   clampTools();
+  if (comentAberto) posicionarPop(); // a janelinha do comentário anda junto com o mapa
 }
 /* o menu do plano nunca fica cortado na borda do quadro (importante em tela estreita) */
 function clampTools() {
@@ -27,22 +28,38 @@ function clampTools() {
   t.style.setProperty("--dy", (dy / view.s).toFixed(1) + "px");
 }
 
+const CADEADO =
+  '<svg class="cad" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>';
+const CADEADO_ABERTO =
+  '<svg class="cad" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M8 11V8a4 4 0 0 1 7.6-1.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+/* abas: cada mapa tem a cor da pessoa (Todos, Dev, Aquisição ou Conteúdo); mapa com senha mostra o cadeado */
 function renderTabs() {
   const list = tabList();
   if (!list.some((m) => m.id === currentMap)) currentMap = list[0].id;
   $("#tabs").innerHTML =
     list
-      .map((m) =>
-        m.id === currentMap
-          ? `<span class="tab on"><input data-key="map-${m.id}" data-map="${m.id}" value="${esc(m.name)}" aria-label="Nome do mapa">${
-              list.length > 1
-                ? confirmMapDel === m.id
-                  ? `<button class="x" data-mapdelok="${m.id}" style="color:var(--danger)">Apagar mapa e planos</button><button class="x" data-mapdelno="1">Cancelar</button>`
-                  : `<button class="x" data-mapdel="${m.id}" title="Apagar este mapa">Apagar</button>`
-                : ""
-            }</span>`
-          : `<button class="tab" data-tab="${m.id}">${esc(m.name)}</button>`,
-      )
+      .map((m) => {
+        const cor = `--c:var(--p-${m.who || "all"})`,
+          trav = mapaTravado(m.id);
+        if (m.id !== currentMap)
+          return `<button class="tab" data-tab="${m.id}" style="${cor}"><span class="tdot" aria-hidden="true"></span>${esc(m.name)}${m.senha ? CADEADO : ""}</button>`;
+        const chave = !m.senha
+          ? ""
+          : trav
+            ? `<button class="x neutro" data-mapchave="${m.id}" title="Desbloquear para editar">${CADEADO}Desbloquear</button>`
+            : `<button class="x neutro" data-mapchave="${m.id}" title="Bloquear de novo neste aparelho" aria-label="Bloquear de novo">${CADEADO_ABERTO}</button>`;
+        const apagar =
+          trav || list.length < 2
+            ? ""
+            : confirmMapDel === m.id
+              ? `<button class="x" data-mapdelok="${m.id}" style="color:var(--danger)">Apagar mapa e planos</button><button class="x" data-mapdelno="1">Cancelar</button>`
+              : `<button class="x" data-mapdel="${m.id}" title="Apagar este mapa">Apagar</button>`;
+        return `<span class="tab on" style="${cor}"><span class="tdot" aria-hidden="true"></span><input data-key="map-${m.id}" data-map="${m.id}" value="${esc(m.name)}" ${trav ? "readonly" : ""} aria-label="Nome do mapa">${chave}${
+          trav
+            ? ""
+            : `<button class="x neutro" data-mapopc="${m.id}" title="Nome, pessoa e senha do mapa">Opções</button>`
+        }${apagar}</span>`;
+      })
       .join("") + `<button class="tab add" id="add-map">+ Novo mapa</button>`;
 }
 
@@ -81,9 +98,15 @@ function render() {
   if (connectFrom) {
     ban.hidden = false;
     ban.innerHTML = `<span>Agora clique no plano que vai receber este.</span><button data-ban="connect-no">Cancelar</button>`;
+  } else if (comentando) {
+    ban.hidden = false;
+    ban.innerHTML = `<span>${matchMedia("(pointer: coarse)").matches ? "Toque" : "Clique"} no mapa onde quer deixar o comentário.</span><button data-ban="coment-no">Cancelar</button>`;
   } else if (aviso) {
     ban.hidden = false;
     ban.innerHTML = `<span>${esc(aviso)}</span>`;
+  } else if (mapaTravado(currentMap)) {
+    ban.hidden = false;
+    ban.innerHTML = `<span>${CADEADO} Mapa ${DE[mapaInfo(currentMap).who || "all"]} com senha<span class="hide-xs">: dá para ver e comentar</span>.</span><button data-mapchave="${currentMap}">Desbloquear</button>`;
   } else ban.hidden = true;
 
   const num = topNumbers();
@@ -97,7 +120,7 @@ function render() {
       lock = travado(n),
       ro = lock ? "readonly" : "",
       off = lock ? "disabled" : "";
-    const dim = lock || (q && !matches(n));
+    const dim = travadoPessoa(n) || (q && !matches(n)); // mapa com senha fica normal, só não deixa mexer
     const cls = [
       "node",
       sub ? "sub" : "main",
@@ -191,7 +214,7 @@ function render() {
       ? `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><span class="body">${ta}<span class="who-lbl">${WHO[n.who || "all"]}${stp}</span></span>${rep}${ck}${tools}</div>`
       : `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><div class="nhead"><span>Passo ${num[n.id]} · ${WHO[n.who || "all"]}</span><span class="right">${stp}${rep}${ck}</span></div>${ta}${tools}</div>`;
   });
-  $("#world").innerHTML = h;
+  $("#world").innerHTML = h + `<div class="pins" id="pins"></div>`;
   document.querySelectorAll("#world .info-corpo").forEach(showAssets);
   applyView();
   if (reportId) fillDrawer();
@@ -313,13 +336,14 @@ function drawEdges() {
   });
   for (const [id, h] of Object.entries(hubs)) {
     const n = get(id),
-      c = n.collapsed,
+      c = fechado(n),
       k = descCount(id);
-    hb += `<button class="hub ${c ? "closed" : ""} ${travado(n) ? "lock" : ""}" data-act="fold" data-id="${id}" style="left:${h.x}px;top:${h.y}px;--c:var(--p-${n.who || "all"})" aria-expanded="${!c}" title="${c ? `Abrir ramificações (${k})` : "Fechar ramificações"}" aria-label="${c ? "Abrir ramificações" : "Fechar ramificações"}">${c ? "+" : "−"}${c ? `<span class="n">${k}</span>` : ""}</button>`;
+    hb += `<button class="hub ${c ? "closed" : ""} ${travadoPessoa(n) ? "lock" : ""}" data-act="fold" data-id="${id}" style="left:${h.x}px;top:${h.y}px;--c:var(--p-${n.who || "all"})" aria-expanded="${!c}" title="${c ? `Abrir ramificações (${k})` : "Fechar ramificações"}" aria-label="${c ? "Abrir ramificações" : "Fechar ramificações"}">${c ? "+" : "−"}${c ? `<span class="n">${k}</span>` : ""}</button>`;
   }
   g.innerHTML = out;
   const hd = document.getElementById("hubs");
   if (hd) hd.innerHTML = hb;
+  drawPins();
 }
 /* all = "Ver tudo". Sem ele, em tela pequena o mapa não fica minúsculo: começa legível pelo início do fluxo. */
 function fit(all) {
@@ -341,6 +365,17 @@ function fit(all) {
     x1 = Math.max(x1, r.cx + r.w);
     y1 = Math.max(y1, r.cy + r.h);
   });
+  // "Ver tudo" mostra também os comentários que estão fora dos planos
+  if (all === true && !ocultos)
+    raizes()
+      .filter(visivel)
+      .forEach((c) => {
+        const p = posDe(c);
+        x0 = Math.min(x0, p.x);
+        y0 = Math.min(y0, p.y - 34);
+        x1 = Math.max(x1, p.x + 34);
+        y1 = Math.max(y1, p.y);
+      });
   const pad = b.width < 600 ? 28 : 60,
     minS = b.width < 600 ? 0.18 : 0.3;
   const s = Math.max(minS, Math.min(1, (b.width - pad) / (x1 - x0 || 1), (b.height - 90) / (y1 - y0 || 1)));

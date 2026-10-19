@@ -120,6 +120,10 @@ async function resolveLayout(anchorId, opt = {}) {
 async function toggleFold(id) {
   const n = get(id);
   if (!n) return;
+  if (mapaTravado(mapOf(n))) {
+    dobras[id] = !fechado(n);
+    return render();
+  }
   begin();
   await write("nodes", id, { collapsed: !n.collapsed });
   if (!get(id).collapsed) await resolveLayout(id);
@@ -127,7 +131,13 @@ async function toggleFold(id) {
   render();
 }
 
+// num mapa do Dev, da Aquisição ou do Conteúdo, o que é criado já começa sendo dessa pessoa
+const quemNovo = () => {
+  const m = mapaInfo(currentMap).who;
+  return m && m !== "all" ? m : who === "all" ? "D" : who;
+};
 function addMain() {
+  if (!mapaLivre()) return;
   const tops = steps(null),
     last = tops[tops.length - 1],
     id = rid();
@@ -137,7 +147,7 @@ function addMain() {
   write("nodes", id, {
     map: currentMap,
     title: "",
-    who: who === "all" ? "D" : who,
+    who: quemNovo(),
     status: "todo",
     done: false,
     parent: null,
@@ -177,6 +187,7 @@ async function addSub(pid) {
   if (el) el.focus({ preventScroll: true });
 }
 async function addListNode(pid, kind = "list") {
+  if (!mapaLivre()) return;
   const id = rid(),
     p = pid ? get(pid) : null,
     ag = kind === "agenda",
@@ -207,7 +218,7 @@ async function addListNode(pid, kind = "list") {
       pos = { x: mx + 60, y: my };
     } else pos = viewCenter();
   }
-  const who0 = p && p.who && p.who !== "all" ? p.who : who === "all" ? "D" : who;
+  const who0 = p && p.who && p.who !== "all" ? p.who : quemNovo();
   const first = { id: rid(), text: "", done: false };
   pendingFocus = ag ? null : info ? id : "li-" + first.id;
   selected = null;
@@ -297,6 +308,7 @@ async function setStatus(id, st) {
    Entre o grupo de um passo (com o que está ligado nele) e o do passo seguinte fica um espaço bem maior.
    Listas soltas viram colunas no fim. Ramificações fechadas também são arrumadas, para aparecerem certas ao abrir. */
 async function tidy() {
+  if (!mapaLivre()) return;
   const size = (id) => {
     const el = document.querySelector(`.node[data-id="${id}"]`);
     return { w: el ? el.offsetWidth : MAIN_W, h: el ? el.offsetHeight : 80 };
@@ -390,19 +402,40 @@ function switchMap(id) {
     requestAnimationFrame(fit);
   }
 }
-async function addMap() {
+// novo mapa: nome, de quem é (Todos, Dev, Aquisição ou Conteúdo) e, se quiser, senha para editar (js/mapas.js)
+async function addMap({ nome, quem = "all", senha = "" } = {}) {
   const list = tabList(),
     id = rid(),
     order = list.reduce((m, x) => Math.max(m, x.order || 0), 0) + 1;
+  const dados = { name: nome || `Mapa ${list.length + 1}`, order, who: quem };
+  if (senha && quem !== "all") dados.senha = await hashSenha(`mapa:${id}:${senha}`);
   begin();
   if (list.some((m) => m.virtual))
     await write("maps", "main", { name: "Mapa 1", order: 0 }, { silent: true });
-  await write("maps", id, { name: `Mapa ${list.length + 1}`, order }, { silent: true });
+  await write("maps", id, dados, { silent: true });
   commit();
-  pendingFocus = "map-" + id;
+  // quem criou já fica com o mapa desbloqueado neste aparelho
+  if (dados.senha) {
+    chaves[id] = dados.senha;
+    guardarChaves();
+  }
   switchMap(id);
 }
+// mudar nome, pessoa ou senha de um mapa; senha null tira a senha, undefined deixa como está
+async function ajustarMapa(id, { nome, quem, senha }) {
+  const m = mapaInfo(id),
+    dados = { name: nome || m.name || "Sem nome", order: m.order || 0, who: quem || m.who || "all" };
+  if (m.hidden) dados.hidden = true;
+  if (dados.who !== "all" && senha) dados.senha = await hashSenha(`mapa:${id}:${senha}`);
+  else if (dados.who !== "all" && senha === undefined && m.senha) dados.senha = m.senha;
+  await write("maps", id, dados, { replace: true });
+  if (dados.senha) {
+    chaves[id] = dados.senha;
+    guardarChaves();
+  }
+}
 async function renameMap(id, name) {
+  if (mapaTravado(id)) return render();
   const m = maps.find((x) => x.id === id),
     v = name.trim() || "Sem nome";
   if (m && m.name === v) return;
@@ -410,10 +443,13 @@ async function renameMap(id, name) {
 }
 async function deleteMap(id) {
   confirmMapDel = null;
+  if (mapaTravado(id)) return render();
   const list = tabList();
   if (list.length < 2) return;
   begin();
   for (const n of nodes.filter((n) => mapOf(n) === id)) await write("nodes", n.id, null, { silent: true });
+  for (const c of comentarios.filter((c) => c.map === id))
+    await write("comentarios", c.id, null, { silent: true });
   if (id === "main")
     await write(
       "maps",

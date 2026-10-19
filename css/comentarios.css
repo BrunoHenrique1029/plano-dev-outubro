@@ -1,0 +1,270 @@
+/* Janelas de novo mapa e de senha, e os comentários no mapa (js/mapas.js e js/comentarios.js) */
+
+/* janela do mapa: de quem é e a senha */
+.modal .lbl-k {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.quem-op {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.quem-op .chip[aria-checked="true"] {
+  border-color: var(--c);
+  background: var(--c);
+  color: var(--on-color);
+}
+.quem-op .chip[aria-checked="true"] .dot {
+  background: var(--on-color) !important; /* a bolinha fica clara em cima da cor */
+}
+.senha-box,
+.senha-campos {
+  display: grid;
+  gap: 8px;
+}
+.senha-box {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.senha-box[hidden],
+.senha-campos[hidden] {
+  display: none;
+}
+.modal label.check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg);
+  cursor: pointer;
+}
+.modal label.check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--c, var(--accent));
+}
+.modal .two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.modal .acts #mapa-cancel,
+.modal .acts #senha-cancel {
+  grid-column: 3;
+}
+
+/* modo de comentar: o próximo clique no mapa põe o comentário, até em cima de um botão do plano */
+.board.comentando,
+.board.comentando .node {
+  cursor: crosshair;
+}
+.board.comentando .node *,
+.board.comentando .hub {
+  pointer-events: none;
+}
+.zoom #c-novo[aria-pressed="true"] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--on-fg);
+}
+
+/* alfinetes: a ponta fica no lugar clicado e o tamanho não muda com o zoom */
+.pins {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  z-index: 5;
+}
+.pin {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  transform: translate(0, -100%) scale(var(--inv, 1));
+  transform-origin: 0 100%;
+  border: 2px solid var(--surface);
+  border-radius: 15px 15px 15px 3px;
+  background: var(--accent);
+  color: var(--on-color);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  font-family: var(--f-display);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.pin:hover,
+.pin.on {
+  background: var(--fg);
+  color: var(--on-fg);
+}
+.pin.novo {
+  background: var(--fg);
+  color: var(--on-fg);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.pin .n {
+  position: absolute;
+  right: -8px;
+  top: -7px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  border: 1.5px solid var(--surface);
+  background: var(--clay);
+  color: #fff;
+  font-family: var(--f-body);
+  font-size: 10.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* janelinha do comentário: a conversa, Responder e Apagar */
+.coment {
+  width: min(320px, calc(100vw - 16px));
+  padding: 10px 12px 12px;
+  display: grid;
+  gap: 8px;
+  border-top: 4px solid var(--accent);
+  border-radius: 6px;
+}
+.coment[hidden] {
+  display: none;
+}
+.cp-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cp-topo b {
+  font-family: var(--f-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.cp-x {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 3px 7px;
+  border-radius: 4px;
+}
+.cp-x:hover {
+  background: var(--bg);
+  color: var(--fg);
+}
+.cp-lista {
+  max-height: min(300px, 42vh);
+  overflow-y: auto;
+  display: grid;
+  gap: 10px;
+}
+.cp-lista[hidden] {
+  display: none;
+}
+.cp-msg {
+  border-left: 3px solid var(--accent);
+  padding: 1px 0 1px 9px;
+}
+.cp-msg.resp {
+  margin-left: 14px;
+  border-left-color: var(--line);
+}
+.cp-quem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13.5px;
+}
+.cp-quem span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.cp-msg p {
+  margin: 3px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.cp-apagar {
+  border: 0;
+  background: none;
+  padding: 3px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cp-apagar:hover,
+.cp-apagar.confirmar {
+  color: var(--danger);
+}
+.cp-apagar.confirmar {
+  font-weight: 700;
+}
+.cp-form textarea {
+  width: 100%;
+  min-height: 58px;
+  resize: vertical;
+  font: inherit;
+  font-size: 14px;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  padding: 7px 9px;
+}
+.cp-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.cp-acts {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+@media (max-width: 720px) {
+  .modal .acts #mapa-cancel,
+  .modal .acts #senha-cancel {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 520px) {
+  .modal .two {
+    grid-template-columns: 1fr;
+  }
+}
+@media (pointer: coarse) {
+  .cp-apagar {
+    padding: 6px 0 2px;
+    font-size: 13px;
+  }
+}

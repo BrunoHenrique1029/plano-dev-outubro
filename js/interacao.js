@@ -80,7 +80,8 @@ board.addEventListener("pointerdown", (e) => {
   if (pinch) return;
   if (e.target.closest(".zoom,.banner,.tools,textarea,select,button,input,a")) return;
   const no = e.target.closest(".node"),
-    el = no && !travado(get(no.dataset.id)) ? no : null; // plano travado não sai do lugar: arrasta o quadro
+    // plano travado não sai do lugar: arrasta o quadro. Comentando, o clique é para pôr o comentário
+    el = no && !comentando && !travado(get(no.dataset.id)) ? no : null;
   drag = {
     id: el?.dataset.id || null,
     el,
@@ -115,7 +116,7 @@ board.addEventListener("pointermove", (e) => {
     applyView();
   }
 });
-board.addEventListener("pointerup", () => {
+board.addEventListener("pointerup", (e) => {
   if (!drag) return;
   const d = drag;
   drag = null;
@@ -140,9 +141,14 @@ board.addEventListener("pointerup", () => {
     pendingRender = true;
     return;
   }
+  if (!d.moved && comentando) {
+    colocarComentario(e);
+    return;
+  }
   if (!d.moved) {
     if (d.lockedId) {
-      avisar(avisoTravado(get(d.lockedId)));
+      // no mapa com senha, a faixa do topo já explica
+      if (!mapaTravado(currentMap)) avisar(avisoTravado(get(d.lockedId)));
       return;
     }
     connectFrom = null;
@@ -179,7 +185,7 @@ document.addEventListener("click", (e) => {
     return;
   }
   if (t.closest("#add-map")) {
-    addMap();
+    abrirMapa(null);
     return;
   }
   const md = t.closest("[data-mapdel]");
@@ -201,12 +207,19 @@ document.addEventListener("click", (e) => {
   const bn = t.closest("[data-ban]");
   if (bn) {
     connectFrom = null;
+    comentando = false;
+    board.classList.remove("comentando");
     render();
     return;
   }
-  const alvo = t.closest("[data-mli-del],[data-mli-add],button[data-act]");
-  if (alvo && !["report", "ag-past"].includes(alvo.dataset.act) && travado(get(alvo.dataset.id))) {
-    avisar(avisoTravado(get(alvo.dataset.id)));
+  const alvo = t.closest("[data-mli-del],[data-mli-add],button[data-act]"),
+    an = alvo && get(alvo.dataset.id);
+  // travado: só dá para ler o relatório e ver reuniões passadas. No mapa com senha também abre e fecha ramificações
+  const livre =
+    alvo &&
+    (["report", "ag-past"].includes(alvo.dataset.act) || (alvo.dataset.act === "fold" && !travadoPessoa(an)));
+  if (alvo && !livre && travado(an)) {
+    avisar(avisoTravado(an));
     return;
   }
   const mdel = t.closest("[data-mli-del]");

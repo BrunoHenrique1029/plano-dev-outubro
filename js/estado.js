@@ -11,6 +11,7 @@ const ICON =
 
 let nodes = [],
   maps = [],
+  comentarios = [], // comentários no mapa (js/comentarios.js); as respostas têm o campo "pai"
   currentMap = "main";
 let who = "all",
   q = "",
@@ -51,7 +52,7 @@ const isShown = (n) => {
   let p = parentOf(n);
   while (p) {
     const pn = get(p);
-    if (pn.collapsed) return false;
+    if (fechado(pn)) return false;
     p = parentOf(pn);
   }
   return true;
@@ -68,9 +69,64 @@ const isDesc = (id, anc) => {
 };
 const statusOf = (n) => n.status || (n.done ? "done" : "todo");
 /* filtro numa pessoa só: os planos das outras pessoas ficam apagados e travados (dá para ver, não para mexer) */
-const travado = (n) => !!n && who !== "all" && (n.who || "all") !== who;
+const travadoPessoa = (n) => !!n && who !== "all" && (n.who || "all") !== who;
 const DE = { all: "de Todos", D: "do Dev", A: "da Aquisição", C: "do Conteúdo" };
+
+/* ---------- senha dos mapas ----------
+   Um mapa do Dev, da Aquisição ou do Conteúdo pode ter senha para editar. Sem a senha, quem abre só vê e comenta.
+   O mapa guarda só o código da senha (hash), nunca a senha. A senha de administrador abre todos os mapas.
+   Isso trava a edição pelo site; quem entra no mapa continua sendo decidido pela lista de e-mails do Firebase. */
+const SENHA_ADM = "56fa2f516e7101ead7dbb4e1d41712664ff13a3df2a7e72f83bafd19d3f9ce00"; // hashSenha("adm:" + senha)
+async function hashSenha(txt) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt));
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+// para trocar a senha de administrador: no console do navegador, await novaSenhaAdm("senha nova")
+const novaSenhaAdm = async (senha) => `const SENHA_ADM = "${await hashSenha("adm:" + senha)}";`;
+const mapaInfo = (id) => tabList().find((m) => m.id === id) || { id, name: "Mapa", who: "all" };
+// mapas desbloqueados neste aparelho: { idDoMapa: código da senha, adm: código da senha de administrador }
+let chaves = {};
+try {
+  chaves = JSON.parse(localStorage.getItem("plano-chaves") || "{}") || {};
+} catch (e) {}
+function guardarChaves() {
+  try {
+    localStorage.setItem("plano-chaves", JSON.stringify(chaves));
+  } catch (e) {}
+}
+const souAdm = () => chaves.adm === SENHA_ADM;
+const temSenha = (id) => !!mapaInfo(id).senha;
+const mapaTravado = (id) => {
+  const m = mapaInfo(id);
+  return !!m.senha && !souAdm() && chaves[m.id] !== m.senha;
+};
+async function desbloquear(id, senha) {
+  const m = mapaInfo(id);
+  if ((await hashSenha("adm:" + senha)) === SENHA_ADM) chaves.adm = SENHA_ADM;
+  else if (m.senha && (await hashSenha(`mapa:${m.id}:${senha}`)) === m.senha) chaves[m.id] = m.senha;
+  else return false;
+  guardarChaves();
+  return true;
+}
+function bloquear(id) {
+  delete chaves[id];
+  delete chaves.adm;
+  guardarChaves();
+}
+const travado = (n) => !!n && (travadoPessoa(n) || mapaTravado(mapOf(n)));
+// mapa com senha e ainda travado neste aparelho: avisa e não deixa mexer
+function mapaLivre() {
+  if (!mapaTravado(currentMap)) return true;
+  avisar(avisoMapa());
+  return false;
+}
+// no mapa com senha, quem só vê também abre e fecha as ramificações, mas isso fica só neste aparelho
+let dobras = {};
+const fechado = (n) => (n.id in dobras && mapaTravado(mapOf(n)) ? dobras[n.id] : !!n.collapsed);
+const avisoMapa = () =>
+  `Este mapa ${DE[mapaInfo(currentMap).who || "all"]} tem senha. Para editar, clique em Desbloquear.`;
 function avisoTravado(n) {
+  if (mapaTravado(mapOf(n))) return avisoMapa();
   const w = n.who || "all",
     oque = isAgenda(n)
       ? "Esta agenda"
@@ -142,7 +198,7 @@ function editedLine(n) {
 /* ---------- salvar e desfazer ---------- */
 function saveLocal() {
   try {
-    localStorage.setItem("plano-mapa", JSON.stringify({ nodes, maps }));
+    localStorage.setItem("plano-mapa", JSON.stringify({ nodes, maps, comentarios }));
     return true;
   } catch (e) {
     return false;
@@ -155,6 +211,7 @@ function loadLocal() {
     else if (d) {
       nodes = d.nodes || [];
       maps = d.maps || [];
+      comentarios = d.comentarios || [];
     }
   } catch (e) {}
 }
@@ -175,7 +232,7 @@ function commit() {
 }
 
 async function write(coll, id, data, opt = {}) {
-  const list = coll === "maps" ? maps : nodes,
+  const list = coll === "maps" ? maps : coll === "comentarios" ? comentarios : nodes,
     i = list.findIndex((x) => x.id === id);
   const before = i >= 0 ? clone(list[i]) : null;
   if (!opt.noHistory) {
@@ -208,6 +265,7 @@ async function write(coll, id, data, opt = {}) {
   else setSave("Não foi possível salvar neste navegador. O espaço pode ter acabado.", "err");
 }
 async function undo() {
+  if (!mapaLivre()) return;
   const entry = undoStack.pop();
   $("#undo").disabled = !undoStack.length;
   if (!entry) return;

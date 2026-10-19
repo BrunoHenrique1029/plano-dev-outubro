@@ -1765,7 +1765,7 @@ function refreshEditorFromData() {
   const d = reportId && repData();
   if (!d || canon(docHtml(d)) === loadedHtml) return;
   if (repTimer) return; // quem está digitando salva daqui a pouco e junta as duas coisas
-  if (document.querySelector(".pop:not([hidden]):not(#tabbar)")) {
+  if (document.querySelector(".pop:not([hidden]):not(#tabbar):not(#coment)")) {
     sincTimer = setTimeout(refreshEditorFromData, 800); // com um menu do editor aberto, espera ele fechar
     return;
   }

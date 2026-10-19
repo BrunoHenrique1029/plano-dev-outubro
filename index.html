@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="css/agenda.css" />
     <link rel="stylesheet" href="css/relatorio.css" />
     <link rel="stylesheet" href="css/nuvem.css" />
+    <link rel="stylesheet" href="css/comentarios.css" />
     <link rel="stylesheet" href="css/responsivo.css" />
     <!-- antes da página aparecer, para ela já abrir no modo escolhido -->
     <script src="js/tema.js"></script>
@@ -111,6 +112,8 @@
             <button id="z-in" aria-label="Aumentar zoom">+</button>
             <button id="z-fit">Ver tudo</button>
             <button id="z-tidy">Organizar</button>
+            <button id="c-novo" aria-pressed="false" title="Deixar um comentário no mapa">Comentar</button>
+            <button id="c-ver" hidden></button>
           </div>
         </div>
       </div>
@@ -210,6 +213,7 @@
           </button></span
         ><button data-tbl="apagar" class="tb-apagar danger">Apagar tabela</button>
       </div>
+      <div class="pop coment" id="coment" role="dialog" aria-label="Comentário" hidden></div>
       <div class="pop imgbar" id="imgbar" hidden>
         <button data-size="s">Pequena</button><button data-size="m">Média</button
         ><button data-size="l">Inteira</button><button data-img="open">Abrir</button
@@ -285,6 +289,79 @@
         </form>
       </div>
 
+      <div class="modal" id="mapa" hidden>
+        <form id="mapa-form" role="dialog" aria-modal="true" aria-labelledby="mapa-h" novalidate>
+          <div>
+            <div class="k">Mapa</div>
+            <h3 id="mapa-h">Novo mapa</h3>
+          </div>
+          <label
+            >Nome do mapa<input name="nome" maxlength="60" placeholder="Nome do mapa" autocomplete="off"
+          /></label>
+          <div class="quem">
+            <span class="lbl-k" id="mapa-quem">De quem é o mapa</span>
+            <div class="quem-op" role="radiogroup" aria-labelledby="mapa-quem">
+              <button type="button" class="chip" role="radio" data-mquem="all" aria-checked="true">
+                <span class="dot" style="background: var(--p-all)"></span>Todos
+              </button>
+              <button type="button" class="chip" role="radio" data-mquem="D" aria-checked="false">
+                <span class="dot" style="background: var(--p-D)"></span>Dev
+              </button>
+              <button type="button" class="chip" role="radio" data-mquem="A" aria-checked="false">
+                <span class="dot" style="background: var(--p-A)"></span>Aquisição
+              </button>
+              <button type="button" class="chip" role="radio" data-mquem="C" aria-checked="false">
+                <span class="dot" style="background: var(--p-C)"></span>Conteúdo
+              </button>
+            </div>
+          </div>
+          <div class="senha-box" id="mapa-senha" hidden>
+            <label class="check"><input type="checkbox" name="usar" />Pedir senha para editar</label>
+            <p class="hint">Sem a senha, quem abrir o mapa só vê e deixa comentários.</p>
+            <div class="senha-campos" id="mapa-campos" hidden>
+              <div class="two">
+                <label
+                  >Senha<input name="senha" type="password" maxlength="60" autocomplete="new-password"
+                /></label>
+                <label
+                  >Repita a senha<input
+                    name="senha2"
+                    type="password"
+                    maxlength="60"
+                    autocomplete="new-password"
+                /></label>
+              </div>
+              <p class="hint" id="mapa-manter" hidden>Deixe em branco para manter a senha de agora.</p>
+            </div>
+          </div>
+          <p class="err" id="mapa-err" hidden></p>
+          <div class="acts">
+            <button type="button" class="btn" id="mapa-cancel">Cancelar</button>
+            <button type="submit" class="btn primary" id="mapa-ok">Criar mapa</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal" id="senha" hidden>
+        <form id="senha-form" role="dialog" aria-modal="true" aria-labelledby="senha-nome" novalidate>
+          <div>
+            <div class="k" id="senha-k">Mapa</div>
+            <h3 id="senha-nome"></h3>
+          </div>
+          <p class="hint">
+            Digite a senha para editar este mapa neste aparelho. Sem ela, dá para ver e comentar.
+          </p>
+          <label
+            >Senha<input name="senha" type="password" maxlength="60" autocomplete="current-password"
+          /></label>
+          <p class="err" id="senha-err" hidden></p>
+          <div class="acts">
+            <button type="button" class="btn" id="senha-cancel">Cancelar</button>
+            <button type="submit" class="btn primary">Desbloquear</button>
+          </div>
+        </form>
+      </div>
+
       <div class="modal entrada" id="entrada" hidden>
         <div class="caixa" role="dialog" aria-modal="true" aria-labelledby="entrada-h">
           <div>
@@ -323,6 +400,8 @@
     <script src="js/relatorio.js"></script>
     <script src="js/desenho.js"></script>
     <script src="js/interacao.js"></script>
+    <script src="js/mapas.js"></script>
+    <script src="js/comentarios.js"></script>
     <script src="js/inicio.js"></script>
     <script src="js/versao.js"></script>
   </body>

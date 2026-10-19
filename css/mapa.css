@@ -14,6 +14,7 @@
   flex: none;
   border: 1px solid var(--line);
   border-bottom: 0;
+  border-top: 4px solid var(--c, var(--line)); /* a cor da pessoa do mapa */
   background: var(--sand);
   border-radius: 6px 6px 0 0;
   padding: 8px 14px;
@@ -23,6 +24,11 @@
   text-transform: uppercase;
   color: var(--muted);
 }
+.tab:not(.on):not(.add) {
+  display: inline-flex;
+  align-items: center;
+  color: color-mix(in srgb, var(--c) 80%, var(--muted));
+}
 .tab.on {
   background: var(--surface);
   color: var(--fg);
@@ -30,6 +36,24 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+.tdot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--c);
+  margin-right: 7px;
+}
+.tab.on .tdot {
+  margin-right: 1px;
+}
+.tab .cad {
+  flex: none;
+  margin-left: 6px;
+}
+.tab .x .cad {
+  margin: 0;
 }
 .tab.on input {
   border: 0;
@@ -50,10 +74,19 @@
   font-size: 12.5px;
   padding: 2px 6px;
   border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .tab .x:hover {
   background: var(--bg);
   color: var(--danger);
+}
+.tab .x.neutro:hover {
+  color: var(--fg);
+}
+.tab.on input[readonly] {
+  border-bottom-color: transparent;
 }
 .tab.add {
   border-style: dashed;
@@ -434,6 +467,7 @@
   left: 50%;
   top: 12px;
   transform: translateX(-50%);
+  width: max-content; /* sem isso a faixa quebra a linha na metade do quadro */
   z-index: 8;
   background: var(--fg);
   color: var(--bg);

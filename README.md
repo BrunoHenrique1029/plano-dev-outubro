@@ -25,6 +25,7 @@ No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 - **Sem internet** o site continua funcionando com a cópia guardada no aparelho. As mudanças sobem sozinhas quando a conexão volta.
 - **Imagens e arquivos** dos relatórios vão para o Firestore em partes de 900 KB, até 10 MB cada. Cada aparelho guarda uma cópia (IndexedDB) depois de abrir.
 - **"Editado por"** mostra o primeiro nome da conta Google de quem mudou.
+- **Comentários** do mapa também ficam no Firestore (coleção `comentarios`), com o primeiro nome de quem comentou.
 - **Na primeira vez** que alguém entra e a nuvem está vazia, o mapa daquele navegador vai para a nuvem (ou, se ele não tiver nada, o mapa como estava no Claude, de `js/dados-iniciais.js`). A cópia antiga continua guardada no navegador.
 
 **Sem a nuvem** (`NUVEM_CONFIG = null` ou aberto pelo `file://`): tudo fica só no navegador (localStorage e IndexedDB), como nas versões anteriores, e cada navegador tem o próprio mapa. Limpar os dados do navegador apaga o mapa.
@@ -47,6 +48,15 @@ O botão **Organizar** põe os passos da esquerda para a direita, com o que est�
 ## Filtro por pessoa
 
 Com o filtro em uma pessoa só (Dev, Aquisição ou Conteúdo), dá para mexer apenas nos planos, listas, agendas e informativos dela. Os outros, inclusive os de **Todos**, ficam apagados e só para ver: não dá para editar, arrastar, conectar nem apagar, e o relatório deles abre só para leitura. Para mexer em tudo, deixe o filtro em **Todos**.
+
+## Mapas, senha e comentários
+
+- **+ Novo mapa** abre uma janela com o nome do mapa e de quem ele é: **Todos**, **Dev**, **Aquisição** ou **Conteúdo**. A aba fica com a cor da pessoa, e o que for criado num mapa do Dev, da Aquisição ou do Conteúdo já nasce dessa pessoa. Depois, **Opções** (na aba do mapa aberto) troca o nome, a pessoa e a senha.
+- **Senha para editar** (só nos mapas do Dev, da Aquisição e do Conteúdo): marque **Pedir senha para editar** e escreva a senha duas vezes, com pelo menos 4 letras ou números. Sem a senha, quem abre o mapa só vê e comenta: não dá para mudar, arrastar, criar, organizar nem apagar, e os relatórios abrem só para leitura. As ramificações abrem e fecham só no aparelho de quem está vendo. Quem criou o mapa já fica com ele aberto.
+- **Desbloquear:** o botão na aba (ou na faixa do mapa) pede a senha. Ela fica valendo naquele aparelho até alguém clicar no cadeado aberto, que bloqueia de novo. Trocar a senha nas Opções bloqueia os outros aparelhos.
+- **Senha de administrador:** abre todos os mapas com senha. Ela fica em `js/estado.js` como código (`SENHA_ADM`), não como texto. Para trocar: abra o site, aperte F12, vá em Console, digite `await novaSenhaAdm("sua senha nova")` e aperte Enter. Copie a linha que aparecer e cole no lugar da linha `const SENHA_ADM = ...` em `js/estado.js`.
+- **O que a senha protege:** ela trava a edição pelo site. Quem entra no mapa continua sendo decidido pela lista de e-mails do Firebase. Alguém que já tem acesso ao mapa e entende de programação conseguiria passar por cima da trava, então quem não pode ver o mapa de jeito nenhum deve ficar fora da lista de e-mails. Como o código é público, use senhas difíceis de adivinhar.
+- **Comentários:** clique em **Comentar** (embaixo do quadro, à esquerda) e depois no lugar do mapa. Funciona em qualquer mapa, até nos com senha. O alfinete mostra a inicial de quem comentou e quantas respostas tem. Clicando nele aparece a conversa, com o nome de cada pessoa, **Responder** e **Apagar** (pede um segundo clique). Comentário em cima de um plano anda junto com ele. No mapa com senha, quem só está vendo apaga apenas o que escreveu. **Ocultar comentários** esconde os alfinetes neste aparelho, e **Ver tudo** mostra também os comentários.
 
 ## Links nos relatórios
 
@@ -109,6 +119,7 @@ css/
   agenda.css            agenda no mapa e janela de reunião
   relatorio.css         aba do relatório e editor
   nuvem.css             tela de entrada com Google e conta no rodapé
+  comentarios.css       janelas de novo mapa e de senha, alfinetes e conversa dos comentários
   responsivo.css        ajustes para celular, tablet e telas grandes
 js/
   tema.js               modo claro ou escuro (carrega no começo do index.html)
@@ -117,13 +128,15 @@ js/
   nuvem-config.js       dados do projeto no Firebase (null = sem nuvem)
   vendor/firebase.js    o Firebase (login e Firestore), já pronto
   dados-iniciais.js     o mapa como estava no Claude
-  estado.js             dados do mapa, salvar e desfazer
+  estado.js             dados do mapa, senha dos mapas, salvar e desfazer
   nuvem.js              login com Google, salvar e receber mudanças, anexos na nuvem
   planos.js             criar, conectar, organizar e apagar planos; abas de mapas
   agenda.js             reuniões e link do Google Agenda
   relatorio.js          editor do relatório, imagens, arquivos e cartões de link
   desenho.js            desenha o mapa, as setas e o zoom
   interacao.js          arrastar, pinça no celular e cliques
+  mapas.js              janela de novo mapa, opções do mapa e desbloquear com a senha
+  comentarios.js        comentários no mapa: pôr, responder, apagar e ocultar
   inicio.js             teclado, botões e começo da página
   versao.js             avisa quando sai uma versão nova do site
 assets/                 ícone e fontes (com as licenças)
