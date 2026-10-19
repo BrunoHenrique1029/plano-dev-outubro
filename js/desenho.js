@@ -90,7 +90,7 @@ function render() {
     ? `${cnt.done} de ${mine.length} planos feitos` + (who === "all" ? "" : ` (${WHO[who]})`)
     : "Nenhum plano neste mapa";
   $("#counts").innerHTML = mine.length
-    ? `<span>A fazer <b>${cnt.todo}</b></span><span>Fazendo <b>${cnt.doing}</b></span><span style="color:var(--st-blocked)">Travado <b>${cnt.blocked}</b></span>`
+    ? `<span><b>${cnt.todo}</b>a fazer</span><span><b>${cnt.doing}</b>fazendo</span><span class="trav"><b>${cnt.blocked}</b>travado</span>`
     : "";
   $("#empty").hidden = list.length > 0;
 
@@ -175,6 +175,11 @@ function render() {
     const rep = `<button class="rep ${n.report || nf ? "has" : ""}" data-act="report" data-id="${n.id}" aria-label="Abrir relatório" title="Relatório">${ICON}${nf ? `<span class="clip">${nf}</span>` : ""}</button>`;
     const L = n.list || [],
       ld = L.filter((i) => i.done).length;
+    // quanto já foi feito do que está ligado ao plano (sub-planos e itens das listas)
+    const pg = isList(n) ? { total: 0 } : feitosDe(n.id),
+      prog = pg.total
+        ? `<div class="nprog"><span>${pg.feito} de ${pg.total} ${pg.total === 1 ? "concluído" : "concluídos"}</span><i><b style="width:${Math.round((pg.feito * 100) / pg.total)}%"></b></i></div>`
+        : "";
     const stp =
       st === "doing"
         ? `<span class="stp doing">Fazendo</span>`
@@ -184,7 +189,7 @@ function render() {
     if (isInfo(n)) {
       const corpo = canon(docHtml(n));
       h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode infonode${n.wide ? " wide" : ""}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">
-        <div class="lhead"><span>Informativo · ${WHO[n.who || "all"]}</span><span class="right"><button class="info-ed" data-act="report" data-id="${n.id}">${lock ? "Ler" : "Editar"}</button></span></div>
+        <div class="lhead"><span class="lt"><span class="lic">${ic(IC.info, 14)}</span>Informativo · ${WHO[n.who || "all"]}</span><span class="right"><button class="info-ed" data-act="report" data-id="${n.id}">${lock ? "Ler" : "Editar"}</button></span></div>
         <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="Título do informativo" aria-label="Título do informativo">${esc(n.title)}</textarea>
         ${corpo ? `<div class="ed info-corpo" data-id="${n.id}">${corpo}</div>` : lock ? "" : `<button class="add-li" data-act="report" data-id="${n.id}">+ Escrever o informativo</button>`}
         ${tools}</div>`;
@@ -197,7 +202,7 @@ function render() {
     if (isList(n)) {
       const pct = L.length ? Math.round((ld * 100) / L.length) : 0;
       h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">
-        <div class="lhead"><span>Lista · ${WHO[n.who || "all"]}</span><span class="right"><span class="lc">${ld}/${L.length}</span>${rep}</span></div>
+        <div class="lhead"><span class="lt"><span class="lic">${ic(IC.lista, 14)}</span>Lista · ${WHO[n.who || "all"]}</span><span class="right"><span class="lc">${ld}/${L.length}</span>${rep}</span></div>
         <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="Nome da lista" aria-label="Nome da lista">${esc(n.title)}</textarea>
         <div class="lbar"><i style="width:${pct}%"></i></div>
         <table class="mtable"><tbody>${L.map(
@@ -211,8 +216,8 @@ function render() {
       return;
     }
     h += sub
-      ? `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><span class="body">${ta}<span class="who-lbl">${WHO[n.who || "all"]}${stp}</span></span>${rep}${ck}${tools}</div>`
-      : `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><div class="nhead"><span>Passo ${num[n.id]} · ${WHO[n.who || "all"]}</span><span class="right">${stp}${rep}${ck}</span></div>${ta}${tools}</div>`;
+      ? `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><span class="nic">${icQuem(n)}</span><span class="body">${ta}<span class="who-lbl">${WHO[n.who || "all"]}${pg.total ? `<span class="nfeito">${pg.feito}/${pg.total}</span>` : ""}${stp}</span></span>${rep}${ck}${tools}</div>`
+      : `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><div class="nhead"><span class="npasso"><span class="nnum">${num[n.id]}</span>Passo ${num[n.id]} · ${WHO[n.who || "all"]}</span><span class="right">${stp}${rep}${ck}</span></div>${ta}${prog}${tools}</div>`;
   });
   $("#world").innerHTML = h + `<div class="pins" id="pins"></div>`;
   document.querySelectorAll("#world .info-corpo").forEach(showAssets);

@@ -644,7 +644,7 @@ const BLOCKS = [
   { k: "ol", label: "Lista numerada", hint: "1, 2, 3…", icon: "1." },
   { k: "todo", label: "Lista de tarefas", hint: "Itens para marcar", icon: "☑" },
   { k: "blockquote", label: "Citação", hint: "Destaca uma frase", icon: "❝" },
-  { k: "callout", label: "Destaque", hint: "Caixa com 💡 para algo importante", icon: "💡" },
+  { k: "callout", label: "Destaque", hint: "Caixa em destaque para algo importante", icon: "ⓘ" },
   { k: "pre", label: "Código", hint: "Bloco de código", icon: "</>" },
   { k: "hr", label: "Divisor", hint: "Linha para separar partes", icon: "—" },
   { k: "table", label: "Tabela", hint: "Escolha quantas linhas e colunas", icon: "▦" },
@@ -1688,7 +1688,7 @@ $("#file-in").onchange = (e) => {
 };
 $("#rep-wide").onclick = () => {
   const w = $("#drawer").classList.toggle("wide");
-  $("#rep-wide").textContent = w ? "Reduzir" : "Tela cheia";
+  $("#rep-wide span").textContent = w ? "Reduzir" : "Tela cheia";
 };
 
 function openReport(id, quiet, item) {
@@ -1741,6 +1741,10 @@ function fillDrawer() {
   const info = !it && isInfo(n);
   $("#drawer").classList.toggle("info", info);
   $("#rep-k").hidden = info;
+  $("#rep-ic").innerHTML = ic(
+    info ? IC.info : isAgenda(n) ? IC.agenda : it || isList(n) ? IC.lista : IC[n.who || "all"],
+    22,
+  );
   ED().dataset.ph = info ? PH_INFO : PH_REL;
   $("#rep-edited").textContent = editedLine(n);
   document

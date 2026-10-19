@@ -19,10 +19,25 @@
 .drawer header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  border-bottom: 3px solid var(--c);
-  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+/* ícone grande do lado do título, na cor da pessoa */
+.rep-ic {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--c) 14%, var(--surface));
+  color: var(--c);
+  display: grid;
+  place-content: center;
+}
+.rep-tt {
+  flex: 1;
+  min-width: 0;
 }
 .drawer .k {
   font-family: var(--f-body);
@@ -35,8 +50,8 @@
 .drawer h2 {
   margin: 2px 0 0;
   font-family: var(--f-display);
-  font-size: 20px;
-  line-height: 1.2;
+  font-size: 25px;
+  line-height: 1.15;
   text-wrap: balance;
 }
 .drawer textarea {
@@ -147,11 +162,13 @@
   z-index: 3;
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 2px;
   align-items: center;
-  background: var(--surface);
-  padding: 6px 0;
-  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  padding: 5px 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 2px 0 4px;
 }
 .edbar button,
 .edbar select {
@@ -160,17 +177,22 @@
   color: var(--fg);
   border-radius: 6px;
   padding: 4px 7px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
-  min-width: 30px;
+  min-width: 32px;
+  height: 32px;
   line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .edbar select {
   border-color: var(--line);
-  background: var(--bg);
+  background: var(--surface);
+  padding-inline: 9px;
 }
 .edbar button:hover {
-  background: var(--bg);
+  background: var(--surface);
   border-color: var(--line);
 }
 .edbar button[aria-pressed="true"] {
@@ -294,18 +316,25 @@
 }
 .ed .callout {
   position: relative;
-  background: var(--bg);
-  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--surface));
   border-radius: 8px;
   padding: 12px 14px 12px 46px;
   margin: 8px 0;
 }
+/* o destaque ganha o ícone de informação (o "i" num círculo) */
 .ed .callout::before {
-  content: "💡";
+  content: "";
   position: absolute;
   left: 15px;
-  top: 11px;
-  font-size: 18px;
+  top: 14px;
+  width: 19px;
+  height: 19px;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 11v5M12 7.6v.01'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 11v5M12 7.6v.01'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 .ed pre {
   background: var(--bg);
@@ -380,17 +409,30 @@
   border-color: var(--muted);
 }
 .ed table {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   width: 100%;
-  margin: 8px 0;
+  margin: 10px 0;
   font-size: 15px;
   table-layout: fixed;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
 }
+/* linhas finas por dentro e cantos arredondados por fora */
 .ed td,
 .ed th {
-  border: 1px solid var(--line);
-  padding: 6px 8px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 9px 11px;
   vertical-align: top;
+}
+.ed tr > :last-child {
+  border-right: 0;
+}
+.ed tr:last-child > * {
+  border-bottom: 0;
 }
 /* cabeçalho da tabela: a primeira linha (em cima) e/ou a primeira coluna (do lado), em destaque.
    Tabela de informativo sem classe é de antes dessas opções: o cabeçalho dela é a primeira linha. */

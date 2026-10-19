@@ -23,7 +23,22 @@
     <div class="wrap">
       <header class="top">
         <div>
-          <h1>Plano Dev Autônomo Outubro</h1>
+          <h1>
+            <svg
+              viewBox="0 0 24 24"
+              width="34"
+              height="34"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h1-ic"
+              aria-hidden="true"
+            >
+              <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" /></svg
+            >Plano Dev Autônomo Outubro
+          </h1>
           <p class="lead">
             Arraste os planos para onde quiser e clique em um plano para ver as opções.<span class="more">
               Use "+ Nova lista" para colocar uma lista com marcações no mapa, "+ Nova agenda" para marcar
@@ -34,7 +49,9 @@
         </div>
         <div class="side">
           <div class="score" aria-live="polite">
-            <div class="big mono" id="pct">0%</div>
+            <div class="score-top">
+              <span class="score-k">Progresso do plano</span><span class="big mono" id="pct">0%</span>
+            </div>
             <div class="bar"><i id="pctbar"></i></div>
             <small id="pcttext">Nenhum plano ainda</small>
             <div class="counts" id="counts"></div>
@@ -65,22 +82,102 @@
       <div class="controls">
         <div class="grp">
           <button class="btn primary" id="add-main" aria-label="Novo plano">
-            + <span class="hide-xs">Novo </span>plano
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="b-ic"
+              aria-hidden="true"
+            >
+              <path d="M5 21V4h11l-2 4 2 4H5" /></svg
+            >+ <span class="hide-xs">Novo </span>plano
           </button>
           <button class="btn" id="add-list" aria-label="Nova lista">
-            + <span class="hide-xs">Nova </span>lista
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="b-ic"
+              aria-hidden="true"
+            >
+              <path d="M9 6h11M9 12h11M9 18h11" />
+              <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="3" /></svg
+            >+ <span class="hide-xs">Nova </span>lista
           </button>
           <button class="btn" id="add-agenda" aria-label="Nova agenda">
-            + <span class="hide-xs">Nova </span>agenda
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="b-ic"
+              aria-hidden="true"
+            >
+              <rect x="3.5" y="5" width="17" height="15.5" rx="1.5" />
+              <path d="M3.5 10h17M8 3v4M16 3v4" /></svg
+            >+ <span class="hide-xs">Nova </span>agenda
           </button>
           <button class="btn" id="add-info" aria-label="Novo informativo">
-            + <span class="hide-xs">Novo informativo</span><span class="so-xs">Info</span>
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="b-ic"
+              aria-hidden="true"
+            >
+              <path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+              <path d="M14 3v5h5M9 13h7M9 17h5" /></svg
+            >+ <span class="hide-xs">Novo informativo</span><span class="so-xs">Info</span>
           </button>
           <button class="btn" id="undo" disabled title="Desfazer (Ctrl+Z)" aria-label="Desfazer">
-            ↶<span class="hide-sm">Desfazer</span>
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 14 4 9l5-5" />
+              <path d="M4 9h10a6 6 0 0 1 0 12h-3" /></svg
+            ><span class="hide-sm">Desfazer</span>
           </button>
           <label class="search"
-            ><span aria-hidden="true">⌕</span
+            ><svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" /></svg
             ><input id="q" type="search" placeholder="Buscar no mapa" aria-label="Buscar no mapa"
           /></label>
         </div>
@@ -110,9 +207,56 @@
           <div class="zoom">
             <button id="z-out" aria-label="Diminuir zoom">−</button>
             <button id="z-in" aria-label="Aumentar zoom">+</button>
-            <button id="z-fit">Ver tudo</button>
-            <button id="z-tidy">Organizar</button>
-            <button id="c-novo" aria-pressed="false" title="Deixar um comentário no mapa">Comentar</button>
+            <button id="z-fit">
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg
+              >Ver tudo
+            </button>
+            <button id="z-tidy">
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="7" height="6" rx="1" />
+                <rect x="14" y="4" width="7" height="6" rx="1" />
+                <rect x="8.5" y="14" width="7" height="6" rx="1" />
+                <path d="M6.5 10v2h11v-2M12 12v2" /></svg
+              >Organizar
+            </button>
+            <button id="c-novo" aria-pressed="false" title="Deixar um comentário no mapa">
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-5 4v-4H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"
+                /></svg
+              >Comentar
+            </button>
             <button id="c-ver" hidden></button>
           </div>
         </div>
@@ -120,13 +264,41 @@
 
       <aside class="drawer" id="drawer" hidden aria-label="Relatório">
         <header>
-          <div>
+          <span class="rep-ic" id="rep-ic" aria-hidden="true"></span>
+          <div class="rep-tt">
             <div class="k"><span id="rep-k">Relatório · </span><span id="rep-who"></span></div>
             <h2 id="rep-title"></h2>
           </div>
           <span class="hbtns"
-            ><button class="btn" id="rep-wide">Tela cheia</button
-            ><button class="btn" id="rep-close">Fechar</button></span
+            ><button class="btn" id="rep-wide">
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg
+              ><span>Tela cheia</span></button
+            ><button class="btn" id="rep-close">
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 6l12 12M18 6 6 18" /></svg
+              ><span>Fechar</span>
+            </button></span
           >
         </header>
         <div class="edbar" id="edbar" role="toolbar" aria-label="Formatação">
@@ -148,17 +320,139 @@
           <button data-cmd="u" title="Sublinhado (Ctrl+U)" aria-pressed="false"><u>U</u></button>
           <button data-cmd="s" title="Riscado" aria-pressed="false"><s>S</s></button>
           <button data-cmd="code" title="Código (Ctrl+E)" class="mono">&lt;/&gt;</button>
-          <button data-cmd="link" title="Link (Ctrl+K)">🔗</button>
+          <button data-cmd="link" title="Link (Ctrl+K)" aria-label="Link">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"
+              />
+            </svg>
+          </button>
           <button data-cmd="color" title="Cor do texto e fundo"><span class="acolor">A</span></button>
           <span class="sep"></span>
-          <button data-cmd="todo" title="Lista de tarefas">☑</button>
-          <button data-cmd="table" title="Tabela">▦<span class="hide-xs"> Tabela</span></button>
-          <button data-cmd="hr" title="Divisor">—</button>
-          <button data-cmd="image" title="Imagem">🖼<span class="hide-xs"> Imagem</span></button>
-          <button data-cmd="file" title="Anexar arquivo">📎<span class="hide-xs"> Arquivo</span></button>
+          <button data-cmd="todo" title="Lista de tarefas" aria-label="Lista de tarefas">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="4" y="4" width="16" height="16" rx="2" />
+              <path d="m8 12 3 3 5-6" />
+            </svg>
+          </button>
+          <button data-cmd="table" title="Tabela" aria-label="Tabela">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3.5" y="4.5" width="17" height="15" rx="1.5" />
+              <path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10" />
+            </svg>
+          </button>
+          <button data-cmd="hr" title="Divisor" aria-label="Divisor">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 12h16" />
+            </svg>
+          </button>
+          <button data-cmd="image" title="Imagem" aria-label="Imagem">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3.5" y="4.5" width="17" height="15" rx="1.5" />
+              <circle cx="9" cy="10" r="1.8" />
+              <path d="m4 18 5-5 4 4 2.5-2.5L20 18" />
+            </svg>
+          </button>
+          <button data-cmd="file" title="Anexar arquivo" aria-label="Anexar arquivo">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="m20 11.5-7.7 7.7a5 5 0 0 1-7.1-7.1l8-8a3.4 3.4 0 0 1 4.8 4.8l-8 8a1.7 1.7 0 0 1-2.4-2.4l7.3-7.3"
+              />
+            </svg>
+          </button>
           <span class="sep"></span>
-          <button data-cmd="undo" title="Desfazer no texto (Ctrl+Z)">↶</button>
-          <button data-cmd="redo" title="Refazer no texto (Ctrl+Shift+Z)">↷</button>
+          <button data-cmd="undo" title="Desfazer no texto (Ctrl+Z)" aria-label="Desfazer no texto">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 14 4 9l5-5" />
+              <path d="M4 9h10a6 6 0 0 1 0 12h-3" />
+            </svg>
+          </button>
+          <button data-cmd="redo" title="Refazer no texto (Ctrl+Shift+Z)" aria-label="Refazer no texto">
+            <svg
+              viewBox="0 0 24 24"
+              width="17"
+              height="17"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m15 14 5-5-5-5" />
+              <path d="M20 9H10a6 6 0 0 0 0 12h3" />
+            </svg>
+          </button>
         </div>
         <div
           class="ed"

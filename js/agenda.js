@@ -109,7 +109,7 @@ function agendaRows(n, rep) {
     body +=
       `<button class="ag-past-t" data-act="ag-past" data-id="${n.id}" aria-expanded="${open}">${open ? "Esconder" : "Ver"} as que já passaram (${past.length})</button>` +
       (open ? days(past, "past", false) : "");
-  return `<div class="lhead"><span class="ttl">${CAL} Agenda · ${WHO[n.who || "all"]}</span><span class="right"><span class="lc">${up.length} ${up.length === 1 ? "próxima" : "próximas"}</span>${rep}</span></div>
+  return `<div class="lhead"><span class="ttl lt"><span class="lic">${ic(IC.agenda, 14)}</span>Agenda · ${WHO[n.who || "all"]}</span><span class="right"><span class="lc">${up.length} ${up.length === 1 ? "próxima" : "próximas"}</span>${rep}</span></div>
     <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${lock ? "readonly" : ""} placeholder="Nome da agenda" aria-label="Nome da agenda">${esc(n.title)}</textarea>
     ${body}
     <button class="add-li" data-act="mtg-add" data-id="${n.id}">+ Reunião</button>`;

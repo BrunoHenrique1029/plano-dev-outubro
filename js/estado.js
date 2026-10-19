@@ -9,6 +9,20 @@ const CAL_ADD =
 const ICON =
   '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 3v5h5M9 13h7M9 17h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
+// ícones de linha (os do mapa: cada pessoa tem o seu, e cada tipo de bloco também)
+const ic = (d, t = 16) =>
+  `<svg viewBox="0 0 24 24" width="${t}" height="${t}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const IC = {
+  all: '<path d="M5 21V4h11l-2 4 2 4H5"/>',
+  D: '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>',
+  A: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M15.5 4.9a3.2 3.2 0 0 1 0 6.2M21 20c0-2.8-1.7-4.8-4.2-5.4"/>',
+  C: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.3v5.4l4.5-2.7z" fill="currentColor"/>',
+  lista: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="3"/>',
+  agenda: '<rect x="3.5" y="5" width="17" height="15.5" rx="1.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  info: '<path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+};
+const icQuem = (n) => ic(IC[n.who || "all"] || IC.all, 15);
+
 let nodes = [],
   maps = [],
   comentarios = [], // comentários no mapa (js/comentarios.js); as respostas têm o campo "pai"
@@ -68,6 +82,27 @@ const isDesc = (id, anc) => {
   return false;
 };
 const statusOf = (n) => n.status || (n.done ? "done" : "todo");
+// quanto do que está ligado a um plano já foi feito: os sub-planos e os itens das listas
+function feitosDe(id) {
+  let feito = 0,
+    total = 0;
+  const visita = (p) =>
+    kids(p).forEach((k) => {
+      if (isAgenda(k) || isInfo(k)) return;
+      if (isList(k))
+        for (const i of k.list || []) {
+          total++;
+          if (i.done) feito++;
+        }
+      else {
+        total++;
+        if (statusOf(k) === "done") feito++;
+        visita(k.id);
+      }
+    });
+  visita(id);
+  return { feito, total };
+}
 /* filtro numa pessoa só: os planos das outras pessoas ficam apagados e travados (dá para ver, não para mexer) */
 const travadoPessoa = (n) => !!n && who !== "all" && (n.who || "all") !== who;
 const DE = { all: "de Todos", D: "do Dev", A: "da Aquisição", C: "do Conteúdo" };

@@ -40,23 +40,29 @@
   .side .score {
     flex: 1;
   }
+  /* no celular o cartão fica baixo: os números ficam do lado do nome */
   .score {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 14px;
-    row-gap: 3px;
-    align-items: center;
     padding: 10px 14px;
     min-width: 0;
+    gap: 5px;
+  }
+  .score-k {
+    font-size: 13px;
   }
   .score .big {
-    grid-row: 1 / span 3;
-    font-size: 30px;
+    font-size: 22px;
   }
-  .score .bar,
-  .score small,
-  .score .counts {
-    grid-column: 2;
+  .counts {
+    padding-top: 5px;
+  }
+  .counts span {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
+    padding-left: 10px;
+  }
+  .counts b {
+    font-size: 17px;
   }
   .controls {
     flex-direction: column;
@@ -68,6 +74,7 @@
     min-width: 0;
   }
   .controls > .grp:first-child {
+    flex: none;
     display: grid;
     grid-template-columns: repeat(8, minmax(0, 1fr));
     grid-template-areas:
@@ -201,6 +208,8 @@
     scrollbar-width: none;
     margin-inline: -14px;
     padding-inline: 14px;
+    border-inline: 0;
+    border-radius: 0;
   }
   .edbar::-webkit-scrollbar {
     display: none;
@@ -238,11 +247,14 @@
   .btn {
     padding: 8px 11px;
   }
-  /* quatro botões de criar na mesma linha */
+  /* quatro botões de criar na mesma linha (sem os ícones, que não cabem) */
   .controls > .grp:first-child > .btn {
     padding-inline: 4px;
     letter-spacing: 0.04em;
     white-space: nowrap;
+  }
+  .controls > .grp:first-child > .btn .b-ic {
+    display: none;
   }
 }
 @media (max-width: 350px) {
