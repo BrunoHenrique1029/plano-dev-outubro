@@ -149,7 +149,7 @@
           <button data-cmd="color" title="Cor do texto e fundo"><span class="acolor">A</span></button>
           <span class="sep"></span>
           <button data-cmd="todo" title="Lista de tarefas">☑</button>
-          <button data-cmd="table" title="Tabela">▦</button>
+          <button data-cmd="table" title="Tabela">▦<span class="hide-xs"> Tabela</span></button>
           <button data-cmd="hr" title="Divisor">—</button>
           <button data-cmd="image" title="Imagem">🖼<span class="hide-xs"> Imagem</span></button>
           <button data-cmd="file" title="Anexar arquivo">📎<span class="hide-xs"> Arquivo</span></button>
@@ -193,10 +193,22 @@
         ><span class="lp-url" id="lp-url"></span><button data-lp="edit">Editar</button
         ><button data-lp="card">Cartão</button><button data-lp="rm" class="danger">Remover</button>
       </div>
-      <div class="pop imgbar" id="tabbar" hidden>
-        <button data-tbl="linha">+ Linha</button><button data-tbl="coluna">+ Coluna</button
-        ><button data-tbl="sem-linha" class="danger">− Linha</button
-        ><button data-tbl="sem-coluna" class="danger">− Coluna</button>
+      <div class="pop tabsize" id="tabsize" hidden></div>
+      <div class="pop imgbar tabbar" id="tabbar" hidden>
+        <span class="tb-g"
+          ><b>Linha</b><button data-tbl="linha" class="tb-q" title="Pôr uma linha embaixo">+</button
+          ><button data-tbl="sem-linha" class="tb-q danger" title="Tirar esta linha">−</button></span
+        ><span class="tb-g"
+          ><b>Coluna</b><button data-tbl="coluna" class="tb-q" title="Pôr uma coluna à direita">+</button
+          ><button data-tbl="sem-coluna" class="tb-q danger" title="Tirar esta coluna">−</button></span
+        ><span class="tb-g"
+          ><b>Cabeçalho</b
+          ><button data-tbl="cab-linha" aria-pressed="false" title="A primeira linha vira o cabeçalho">
+            Em cima</button
+          ><button data-tbl="cab-coluna" aria-pressed="false" title="A primeira coluna vira o cabeçalho">
+            Do lado
+          </button></span
+        ><button data-tbl="apagar" class="tb-apagar danger">Apagar tabela</button>
       </div>
       <div class="pop imgbar" id="imgbar" hidden>
         <button data-size="s">Pequena</button><button data-size="m">Média</button

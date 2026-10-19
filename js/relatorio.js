@@ -76,6 +76,7 @@ const RENAME = {
   H4: "H3",
   H5: "H3",
   H6: "H3",
+  TH: "TD",
   THEAD: "TBODY",
   TFOOT: "TBODY",
   SECTION: "DIV",
@@ -281,6 +282,13 @@ function cleanNode(node) {
       out.setAttribute("rel", "noopener");
     }
   }
+  if (tag === "TABLE") {
+    ["cab-linha", "cab-coluna", "sem-cab"].forEach((c) => node.classList.contains(c) && out.classList.add(c));
+    // tabela colada com cabeçalho (th na primeira linha) já chega com o cabeçalho em cima
+    const r1 = node.querySelector("tr");
+    if (r1?.children.length && [...r1.children].every((x) => x.tagName === "TH"))
+      out.classList.add("cab-linha");
+  }
   if (tag === "UL" && node.classList.contains("todo")) out.className = "todo";
   if (tag === "DIV" && node.classList.contains("callout")) out.className = "callout";
   if (tag === "P" && node.classList.contains("uploading")) out.className = "uploading";
@@ -294,6 +302,14 @@ function cleanNode(node) {
     if (g) out.dataset.bg = g;
   }
   out.append(inner());
+  if (tag === "TABLE") {
+    // thead e tfoot viram tbody: junta tudo num só, para a primeira linha ser uma só
+    const [tb, ...resto] = out.querySelectorAll(":scope > tbody");
+    resto.forEach((x) => {
+      tb.append(...x.childNodes);
+      x.remove();
+    });
+  }
   if (tag === "SPAN" && !out.dataset.color && !out.dataset.bg) {
     const f = document.createDocumentFragment();
     f.append(...out.childNodes);
@@ -472,8 +488,25 @@ document.addEventListener("selectionchange", () => {
   syncTabbar();
 });
 
-/* barrinha da tabela: com o cursor numa célula, dá para pôr e tirar linhas e colunas */
-let tabCell = null;
+/* barrinha da tabela: com o cursor numa célula, dá para pôr e tirar linhas e colunas,
+   escolher o cabeçalho (primeira linha em cima, primeira coluna do lado) e apagar a tabela */
+let tabCell = null,
+  apagarTimer = 0;
+function desarmarApagar() {
+  clearTimeout(apagarTimer);
+  const b = $('#tabbar [data-tbl="apagar"]');
+  b.classList.remove("confirmar");
+  b.textContent = "Apagar tabela";
+}
+// cabeçalho ligado em cima e do lado? Tabela de informativo feita antes dessas opções (sem classe)
+// já tinha a primeira linha como cabeçalho
+function cabecalho(tabela) {
+  const antiga = !tabela.classList.length && !!tabela.closest(".info-corpo, .drawer.info");
+  return {
+    "cab-linha": antiga || tabela.classList.contains("cab-linha"),
+    "cab-coluna": tabela.classList.contains("cab-coluna"),
+  };
+}
 function celulaAtual() {
   const r = liveRange(),
     n = r && (r.startContainer.nodeType === 3 ? r.startContainer.parentNode : r.startContainer),
@@ -487,8 +520,12 @@ function syncTabbar() {
     if (!bar.matches(":hover, :focus-within")) bar.hidden = true;
     return;
   }
+  const tabela = c.closest("table");
+  if (tabCell?.closest("table") !== tabela) desarmarApagar();
   tabCell = c;
-  const t = c.closest("table").getBoundingClientRect(),
+  const cab = cabecalho(tabela);
+  for (const k in cab) bar.querySelector(`[data-tbl="${k}"]`).setAttribute("aria-pressed", cab[k]);
+  const t = tabela.getBoundingClientRect(),
     linha = c.parentElement.getBoundingClientRect();
   bar.hidden = false;
   const h = bar.offsetHeight,
@@ -508,7 +545,25 @@ function mexerTabela(acao) {
       return x;
     };
   let foco = c;
-  if (acao === "linha") {
+  if (acao === "cab-linha" || acao === "cab-coluna") {
+    const cab = cabecalho(tabela);
+    cab[acao] = !cab[acao];
+    for (const k in cab) tabela.classList.toggle(k, cab[k]);
+    tabela.classList.toggle("sem-cab", !cab["cab-linha"] && !cab["cab-coluna"]); // sem cabeçalho, de propósito
+  } else if (acao === "apagar") {
+    // apagar pede um segundo clique, para não sumir com a tabela sem querer
+    const b = $('#tabbar [data-tbl="apagar"]');
+    if (!b.classList.contains("confirmar")) {
+      b.classList.add("confirmar");
+      b.textContent = "Apagar mesmo?";
+      clearTimeout(apagarTimer);
+      apagarTimer = setTimeout(desarmarApagar, 4000);
+      return;
+    }
+    desarmarApagar();
+    foco = tabela.nextElementSibling;
+    tabela.remove();
+  } else if (acao === "linha") {
     const t2 = document.createElement("tr");
     [...tr.children].forEach(() => t2.append(nova("td")));
     tr.after(t2);
@@ -529,19 +584,54 @@ function mexerTabela(acao) {
     foco = tr.children[Math.min(col, tr.children.length - 1)] || null;
   }
   // sem linhas ou sem colunas, a tabela some
-  if (!tabela.querySelector("td,th")) {
+  if (tabela.isConnected && !tabela.querySelector("td,th")) {
     foco = tabela.nextElementSibling;
     tabela.remove();
   }
   tidyEditor();
   if (foco?.isConnected) caretInto(foco, true);
   edChanged();
-  syncTabbar();
+  if (!tabela.isConnected) {
+    $("#tabbar").hidden = true;
+    tabCell = null;
+  } else syncTabbar();
 }
 $("#tabbar").addEventListener("mousedown", (e) => e.preventDefault());
 $("#tabbar").addEventListener("click", (e) => {
   const b = e.target.closest("[data-tbl]");
   if (b) mexerTabela(b.dataset.tbl);
+});
+
+/* nova tabela: passa o mouse (ou toca) nos quadradinhos para escolher quantas colunas e linhas */
+const TAB_MAX = 8;
+function escolherTabela(rect) {
+  hidePops();
+  let q = "";
+  for (let l = 1; l <= TAB_MAX; l++)
+    for (let c = 1; c <= TAB_MAX; c++)
+      q += `<button data-l="${l}" data-c="${c}" aria-label="${c} × ${l}"></button>`;
+  $("#tabsize").innerHTML =
+    `<b id="ts-tam"></b><div class="ts-grade">${q}</div><small>Escolha o tamanho. Depois dá para pôr e tirar linhas e colunas.</small>`;
+  marcarTamanho(3, 3);
+  placePop($("#tabsize"), rect || caretRect());
+}
+function marcarTamanho(l, c) {
+  $("#tabsize")
+    .querySelectorAll("button[data-l]")
+    .forEach((b) => b.classList.toggle("on", +b.dataset.l <= l && +b.dataset.c <= c));
+  $("#ts-tam").textContent = `${c} ${c > 1 ? "colunas" : "coluna"} × ${l} ${l > 1 ? "linhas" : "linha"}`;
+}
+$("#tabsize").addEventListener("mousedown", (e) => e.preventDefault());
+$("#tabsize").addEventListener("mouseover", (e) => {
+  const b = e.target.closest("button[data-l]");
+  if (b) marcarTamanho(+b.dataset.l, +b.dataset.c);
+});
+$("#tabsize").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-l]");
+  if (!b) return;
+  $("#tabsize").hidden = true;
+  restoreRange();
+  insertBlocks([makeTable(+b.dataset.l, +b.dataset.c)]);
 });
 
 /* blocos */
@@ -557,7 +647,7 @@ const BLOCKS = [
   { k: "callout", label: "Destaque", hint: "Caixa com 💡 para algo importante", icon: "💡" },
   { k: "pre", label: "Código", hint: "Bloco de código", icon: "</>" },
   { k: "hr", label: "Divisor", hint: "Linha para separar partes", icon: "—" },
-  { k: "table", label: "Tabela", hint: "Tabela 3 × 3", icon: "▦" },
+  { k: "table", label: "Tabela", hint: "Escolha quantas linhas e colunas", icon: "▦" },
   { k: "image", label: "Imagem", hint: "Enviar uma imagem", icon: "🖼" },
   { k: "file", label: "Arquivo", hint: "Anexar PDF, vídeo ou outro arquivo", icon: "📎" },
   { k: "linkcard", label: "Link com prévia", hint: "Cartão com a imagem e o título do site", icon: "🔗" },
@@ -577,8 +667,12 @@ function blockType() {
 }
 function setBlock(type) {
   restoreRange();
-  if (type === "hr" || type === "table") {
-    insertBlocks(type === "hr" ? [document.createElement("hr")] : [makeTable()]);
+  if (type === "hr") {
+    insertBlocks([document.createElement("hr")]);
+    return;
+  }
+  if (type === "table") {
+    escolherTabela();
     return;
   }
   if (type === "image") {
@@ -643,13 +737,14 @@ function setBlock(type) {
   }
   edChanged();
 }
-function makeTable() {
+function makeTable(linhas = 3, colunas = 3) {
   const t = document.createElement("table"),
     tb = document.createElement("tbody");
+  t.className = "cab-linha"; // começa com o cabeçalho em cima; a barrinha da tabela muda
   t.append(tb);
-  for (let r = 0; r < 3; r++) {
+  for (let r = 0; r < linhas; r++) {
     const tr = document.createElement("tr");
-    for (let c = 0; c < 3; c++) {
+    for (let c = 0; c < colunas; c++) {
       const td = document.createElement("td");
       td.innerHTML = "<br>";
       tr.append(td);
@@ -758,7 +853,7 @@ function caretRect() {
 function hidePops() {
   linkSel = null;
   linkCard = false;
-  ["#slash", "#colors", "#linkbar", "#imgbar", "#linkpop", "#tabbar"].forEach((s) => {
+  ["#slash", "#colors", "#linkbar", "#imgbar", "#linkpop", "#tabbar", "#tabsize"].forEach((s) => {
     const e = $(s);
     if (e) e.hidden = true;
   });
@@ -834,6 +929,9 @@ $("#edbar").addEventListener("click", (e) => {
     return;
   } else if (c === "link") {
     showLink(b);
+    return;
+  } else if (c === "table") {
+    escolherTabela(b.getBoundingClientRect());
     return;
   } else if (c === "undo") {
     document.execCommand("undo");
@@ -1288,7 +1386,8 @@ ed0.addEventListener("keydown", (e) => {
   }
   if (e.key === "Escape") {
     e.preventDefault();
-    closeReport();
+    if (!$("#tabsize").hidden) $("#tabsize").hidden = true;
+    else closeReport();
     return;
   }
   if (e.key === " " && mdShortcut(e)) return;
@@ -1572,10 +1671,11 @@ $("#drawer").addEventListener("scroll", () => {
   syncTabbar();
   $("#colors").hidden = true;
   $("#linkbar").hidden = true;
+  $("#tabsize").hidden = true;
 });
 document.addEventListener("mousedown", (e) => {
-  if (!e.target.closest("#slash,#colors,#linkbar,#imgbar,#linkpop,#tabbar,#edbar,#rep-ed")) {
-    ["#colors", "#linkbar", "#imgbar", "#linkpop"].forEach((s) => ($(s).hidden = true));
+  if (!e.target.closest("#slash,#colors,#linkbar,#imgbar,#linkpop,#tabbar,#tabsize,#edbar,#rep-ed")) {
+    ["#colors", "#linkbar", "#imgbar", "#linkpop", "#tabsize"].forEach((s) => ($(s).hidden = true));
   }
 });
 $("#img-in").onchange = (e) => {

@@ -392,6 +392,26 @@
   padding: 6px 8px;
   vertical-align: top;
 }
+/* cabeçalho da tabela: a primeira linha (em cima) e/ou a primeira coluna (do lado), em destaque.
+   Tabela de informativo sem classe é de antes dessas opções: o cabeçalho dela é a primeira linha. */
+.ed table.cab-linha tr:first-child > *,
+.ed table.cab-coluna tr > :first-child,
+.info-corpo table:not([class]) tr:first-child > *,
+.drawer.info .ed table:not([class]) tr:first-child > * {
+  background: var(--fg);
+  color: var(--surface);
+  border-color: var(--muted);
+  font-family: var(--f-display);
+  font-size: 1.08em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.ed table.cab-linha tr:first-child > * a,
+.ed table.cab-coluna tr > :first-child a,
+.info-corpo table:not([class]) tr:first-child > * a,
+.drawer.info .ed table:not([class]) tr:first-child > * a {
+  color: inherit;
+}
 .ed .uploading {
   color: var(--muted);
   font-style: italic;
@@ -669,6 +689,90 @@
 }
 .imgbar .danger {
   color: var(--danger);
+}
+.tabbar {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  max-width: min(620px, calc(100vw - 16px));
+  padding: 6px 10px;
+}
+.tabbar .tb-g {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.tabbar .tb-g > b {
+  margin-right: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tabbar button {
+  border: 1px solid var(--line);
+}
+.tabbar .tb-q {
+  min-width: 30px;
+  padding: 2px 0;
+  font-size: 17px;
+  line-height: 1.2;
+}
+.tabbar button[aria-pressed="true"] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--surface);
+}
+.tabbar .tb-apagar {
+  min-width: 112px; /* mesma largura com "Apagar mesmo?" */
+  border-color: currentColor;
+}
+.tabbar .tb-apagar.confirmar,
+.tabbar .tb-apagar.confirmar:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--on-color);
+}
+.tabsize {
+  padding: 8px 10px 10px;
+}
+.tabsize > b {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.tabsize > small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.ts-grade {
+  display: grid;
+  grid-template-columns: repeat(8, 22px);
+  gap: 3px;
+}
+.ts-grade button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+}
+.ts-grade button.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+@media (pointer: coarse) {
+  .ts-grade {
+    grid-template-columns: repeat(8, 30px);
+  }
+  .ts-grade button {
+    width: 30px;
+    height: 30px;
+  }
 }
 
 .ed img.missing {

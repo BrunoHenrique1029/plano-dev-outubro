@@ -36,7 +36,7 @@ No ar em https://brunohenrique1029.github.io/plano-dev-outubro/
 Para textos e instruções que todo mundo precisa ler: explicações, regras, tabelas. Crie com **+ Novo informativo** ou, para ficar ligado a um passo, com **+ Informativo** no menu do passo.
 
 - Clique em **Editar** no cartão (ou dois cliques no texto) para escrever. O editor é o mesmo do relatório, com títulos, listas, tabelas, imagens e links.
-- A primeira linha de cada tabela do informativo vira o cabeçalho. Com o cursor numa tabela aparece a barrinha **+ Linha, + Coluna, − Linha, − Coluna**. Também dá para colar uma tabela copiada de outro lugar.
+- **Tabelas** (no informativo e no relatório): no botão **▦ Tabela**, ou digitando `/` e escolhendo Tabela, passe o mouse nos quadradinhos para escolher quantas colunas e linhas. Com o cursor numa tabela aparece a barrinha com **Linha + −**, **Coluna + −**, **Cabeçalho: Em cima / Do lado** (a primeira linha, a primeira coluna ou as duas ficam em destaque, com fundo escuro) e **Apagar tabela**, que pede um segundo clique para não apagar sem querer. Também dá para colar uma tabela copiada de outro lugar.
 - No menu do informativo, **Mais largo** deixa o cartão quase com o dobro da largura, bom para tabelas grandes.
 - No celular, tabelas largas rolam para o lado dentro do editor.
 

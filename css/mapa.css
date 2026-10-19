@@ -746,9 +746,3 @@
 .info-corpo th {
   padding: 6px 8px;
 }
-/* a primeira linha da tabela do informativo é o cabeçalho */
-.info-corpo tr:first-child > *,
-.drawer.info .ed tr:first-child > * {
-  background: var(--bg);
-  font-weight: 600;
-}
