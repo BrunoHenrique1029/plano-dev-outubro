@@ -73,6 +73,8 @@ const isShown = (n) => {
 };
 const descCount = (id) => kids(id).reduce((t, k) => t + 1 + descCount(k.id), 0);
 const steps = (p) => kids(p).filter((n) => !isList(n));
+// com quem um plano divide a ordem: os passos entre si; o que está ligado num plano (sub-planos, listas, agendas, informativos), tudo junto
+const irmaos = (n) => (parentOf(n) ? kids(parentOf(n)) : steps(null));
 const isDesc = (id, anc) => {
   let n = get(id);
   while (n && parentOf(n)) {

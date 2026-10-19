@@ -271,21 +271,75 @@ async function disconnect(id) {
   const tops = kids(null);
   await write("nodes", id, { parent: null, order: tops.length ? (tops[tops.length - 1].order || 0) + 1 : 1 });
 }
+/* muda a ordem entre os irmãos. Nos passos, troca o número. No que está ligado a um plano, os dois
+   também trocam de lugar no quadro, para a ordem nova aparecer na hora (e o Organizar segue a mesma ordem) */
 async function shift(id, dir) {
   const n = get(id),
-    sib = steps(parentOf(n)),
+    sib = irmaos(n),
     i = sib.findIndex((x) => x.id === id),
     j = i + dir;
-  if (j < 0 || j >= sib.length) return;
-  const a = sib[i],
-    b = sib[j],
-    oa = a.order,
-    ob = b.order === oa ? oa + dir : b.order;
+  if (i < 0 || j < 0 || j >= sib.length) return;
+  const nova = [...sib];
+  [nova[i], nova[j]] = [nova[j], nova[i]];
+  const lugar = parentOf(n) ? lugarNaOrdem(nova[Math.min(i, j)].id, nova[Math.max(i, j)].id) : {};
+  // planos antigos podem ter a mesma ordem (ou nenhuma): aí numera todos de novo, 1, 2, 3…
+  const empate = sib.some((x, k) => k > 0 && (x.order ?? 0) <= (sib[k - 1].order ?? 0));
   begin();
-  await write("nodes", a.id, { order: ob }, { silent: true });
-  await write("nodes", b.id, { order: oa }, { silent: true });
+  if (empate) {
+    for (const [k, x] of nova.entries())
+      if (x.order !== k + 1) await write("nodes", x.id, { order: k + 1 }, { silent: true });
+  } else {
+    await write("nodes", sib[i].id, { order: sib[j].order }, { silent: true });
+    await write("nodes", sib[j].id, { order: sib[i].order }, { silent: true });
+  }
+  for (const [mid, p] of Object.entries(lugar)) await write("nodes", mid, p, { silent: true });
+  if (parentOf(n)) await resolveLayout(id);
   commit();
   render();
+}
+/* onde ficam dois irmãos vizinhos (cada um com o que está ligado nele) depois de trocarem de ordem:
+   o que agora vem antes vai para o primeiro lugar e o outro vai logo depois, com o mesmo espaço que já
+   havia entre eles. Funciona lado a lado ou um embaixo do outro, como o Organizar deixa. */
+function lugarNaOrdem(antesId, depoisId) {
+  const ramo = (id) => [id, ...kids(id).flatMap((k) => ramo(k.id))];
+  const caixa = (id) =>
+    ramo(id)
+      .filter((r) => isShown(get(r)))
+      .map((r) => {
+        const m = get(r),
+          el = document.querySelector(`.node[data-id="${r}"]`),
+          x = m.x || 0,
+          y = m.y || 0;
+        return { x0: x, y0: y, x1: x + (el ? el.offsetWidth : MAIN_W), y1: y + (el ? el.offsetHeight : 80) };
+      })
+      .reduce((r, q) => ({
+        x0: Math.min(r.x0, q.x0),
+        y0: Math.min(r.y0, q.y0),
+        x1: Math.max(r.x1, q.x1),
+        y1: Math.max(r.y1, q.y1),
+      }));
+  const A = caixa(antesId),
+    D = caixa(depoisId);
+  // um embaixo do outro ou lado a lado: vale o lado em que os dois estão mais longe
+  const vert = Math.abs(D.y0 + D.y1 - A.y0 - A.y1) >= Math.abs(D.x0 + D.x1 - A.x0 - A.x1),
+    [e0, e1, c0] = vert ? ["y0", "y1", "x0"] : ["x0", "x1", "y0"];
+  const [p1, p2] = A[e0] <= D[e0] ? [A, D] : [D, A], // os dois lugares, na ordem em que aparecem no quadro
+    gap = Math.max(24, p2[e0] - p1[e1]);
+  const alvo = [
+    [antesId, A, p1[e0], p1[c0]],
+    [depoisId, D, p1[e0] + A[e1] - A[e0] + gap, p2[c0]],
+  ];
+  const out = {};
+  for (const [id, cx, eixo, cruz] of alvo) {
+    const dx = vert ? cruz - cx[c0] : eixo - cx[e0],
+      dy = vert ? eixo - cx[e0] : cruz - cx[c0];
+    if (dx || dy)
+      for (const r of ramo(id)) {
+        const m = get(r);
+        out[r] = { x: Math.round((m.x || 0) + dx), y: Math.round((m.y || 0) + dy) };
+      }
+  }
+  return out;
 }
 async function remove(id) {
   confirmDel = null;

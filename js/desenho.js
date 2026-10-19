@@ -135,7 +135,7 @@ function render() {
         ? "target"
         : "",
     ].join(" ");
-    const sib = steps(parentOf(n)),
+    const sib = irmaos(n),
       si = sib.findIndex((x) => x.id === n.id);
     const tools =
       !isSel || connectFrom || lock
@@ -157,7 +157,15 @@ function render() {
           ${isList(n) ? "" : `<button data-act="list" data-id="${n.id}">+ Lista</button><button data-act="agenda" data-id="${n.id}">+ Agenda</button><button data-act="info" data-id="${n.id}">+ Informativo</button>`}
         </div>
         <div class="row">
-          ${sub || isList(n) ? "" : `<button data-act="up" data-id="${n.id}" ${si <= 0 ? "disabled" : ""} title="Diminuir o número do passo">◀ Nº</button><button data-act="down" data-id="${n.id}" ${si >= sib.length - 1 ? "disabled" : ""} title="Aumentar o número do passo">Nº ▶</button>`}
+          ${
+            sub
+              ? sib.length > 1
+                ? `<button data-act="up" data-id="${n.id}" ${si <= 0 ? "disabled" : ""} title="Passar para antes do que está ligado no mesmo plano">◀ Antes</button><button data-act="down" data-id="${n.id}" ${si >= sib.length - 1 ? "disabled" : ""} title="Passar para depois do que está ligado no mesmo plano">Depois ▶</button>`
+                : ""
+              : isList(n)
+                ? ""
+                : `<button data-act="up" data-id="${n.id}" ${si <= 0 ? "disabled" : ""} title="Diminuir o número do passo">◀ Nº</button><button data-act="down" data-id="${n.id}" ${si >= sib.length - 1 ? "disabled" : ""} title="Aumentar o número do passo">Nº ▶</button>`
+          }
           ${isList(n) ? "" : `<button data-act="sub" data-id="${n.id}">+ Sub-plano</button>`}
           <button data-act="connect" data-id="${n.id}">Conectar a outro</button>
           ${sub ? `<button data-act="disconnect" data-id="${n.id}">Desconectar</button>` : ""}
