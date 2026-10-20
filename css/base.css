@@ -75,6 +75,8 @@
   --label: #eceef2;
   --on-color: #17191c;
   --on-fg: #17191c;
+  /* cor de todos os blocos do mapa no escuro (no lugar da cor da pessoa ou do passo) */
+  --bloco-escuro: #9ca2ad;
   --tab-cab: #323946;
   --tab-cab-txt: #eceef2;
   --tab-cab-linha: #444c5a;

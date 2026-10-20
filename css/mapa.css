@@ -605,7 +605,12 @@
   padding: 12px 12px 12px 12px;
   gap: 8px;
 }
-/* no escuro, os cartões ficam cinza; a cor da pessoa fica só no número, no ícone e nas setas */
+/* no escuro, todos os blocos ficam cinza (cartão, número, ícone, botões e bolinha de abrir);
+   a pessoa aparece pelo nome escrito no bloco e pela cor da seta.
+   O !important passa por cima da cor que cada bloco recebe no style */
+:root[data-tema="escuro"] :is(.node, .hub) {
+  --c: var(--bloco-escuro) !important;
+}
 :root[data-tema="escuro"] .node.main,
 :root[data-tema="escuro"] .node.sub,
 :root[data-tema="escuro"] .node.listnode {
