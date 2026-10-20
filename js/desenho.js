@@ -234,7 +234,7 @@ function render() {
     }
     h += sub
       ? `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><span class="nic">${icQuem(n, 22)}</span><span class="body"><span class="ntop">${ta}${kb}</span><span class="who-lbl" title="${WHO[n.who || "all"]}"><span>${feitos || WHO[n.who || "all"]}</span>${stp}<span class="nlado">${rep}${ck}</span></span></span>${tools}</div>`
-      : `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><div class="nhead"><span class="npasso"><span class="nnum">${num[n.id]}</span>Passo ${num[n.id]} · ${WHO[n.who || "all"]}</span><span class="right">${stp}${rep}${ck}${kb}</span></div><div class="nmeio"><span class="nbig">${ic(IC_PASSO[(num[n.id] - 1) % IC_PASSO.length], 34)}</span><div class="ncorpo">${ta}${prog}</div></div>${tools}</div>`;
+      : `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><div class="nhead"><span class="npasso"><span class="nnum">${num[n.id]}</span>Passo ${num[n.id]} · ${WHO[n.who || "all"]}</span><span class="right">${stp}${rep}${ck}${kb}</span></div><div class="ncorpo">${ta}${prog}</div>${tools}</div>`;
   });
   $("#world").innerHTML = h + `<div class="pins" id="pins"></div>`;
   document.querySelectorAll("#world .info-corpo").forEach(showAssets);

@@ -146,7 +146,7 @@
   cursor: grabbing;
   z-index: 5;
 }
-/* passo: cartão claro na cor dele, número na bolinha, ícone grande e quanto já foi feito */
+/* passo: cartão claro na cor dele, número na bolinha e quanto já foi feito (sem brilho em volta) */
 .node.main {
   width: 310px;
   background: color-mix(in srgb, var(--c) 8%, var(--surface));
@@ -155,7 +155,6 @@
   border-radius: 14px;
   padding: 12px 14px 14px 16px;
   gap: 8px;
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--c) 11%, transparent);
 }
 .npasso {
   display: inline-flex;
@@ -176,23 +175,7 @@
   display: grid;
   place-content: center;
 }
-.nmeio {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-.nbig {
-  flex: none;
-  color: var(--c);
-  padding-top: 2px;
-}
-.nbig svg {
-  display: block;
-  stroke-width: 1.9;
-}
 .ncorpo {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -210,7 +193,6 @@
   width: 300px;
   background: color-mix(in srgb, var(--c) 7%, var(--surface));
   color: var(--fg);
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--c) 30%, var(--surface));
   border-radius: 14px;
   padding: 12px 10px 12px 12px;
@@ -264,14 +246,15 @@
   background: color-mix(in srgb, var(--c) 14%, var(--surface));
   color: var(--fg);
 }
+/* selecionado e achado na busca: uma linha firme em volta, sem brilho */
 .node.sel {
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow: 0 0 0 2px var(--c);
 }
 .node.dim {
   opacity: 0.25;
 }
 .node.hit {
-  box-shadow: 0 0 0 4px var(--hit);
+  box-shadow: 0 0 0 2px var(--hit);
 }
 .node.target {
   outline: 3px dashed var(--c);
@@ -621,7 +604,6 @@
   border-radius: 14px;
   padding: 12px 12px 12px 12px;
   gap: 8px;
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 9%, transparent);
 }
 /* ícone do tipo de bloco: lista, agenda ou informativo */
 .lic {
