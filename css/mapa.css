@@ -99,11 +99,7 @@
 .board {
   position: relative;
   height: max(480px, 70vh);
-  /* pontinhos de fundo que andam e crescem junto com o mapa (applyView muda --gx, --gy e --gs) */
   background-color: color-mix(in srgb, var(--bg) 45%, var(--surface));
-  background-image: radial-gradient(circle, var(--grid) 1.1px, transparent 1.5px);
-  background-size: var(--gs, 22px) var(--gs, 22px);
-  background-position: var(--gx, 0) var(--gy, 0);
   border: 1px solid var(--line);
   border-radius: 0 16px 16px 16px;
   box-shadow: var(--shadow);

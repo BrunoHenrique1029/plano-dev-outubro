@@ -3,11 +3,6 @@ function applyView() {
   const w = $("#world");
   w.style.transform = `translate(${view.tx}px,${view.ty}px) scale(${view.s})`;
   w.style.setProperty("--inv", (1 / view.s).toFixed(3));
-  // os pontinhos do fundo andam e crescem junto com o mapa
-  const bs = $("#board").style;
-  bs.setProperty("--gs", (22 * view.s).toFixed(2) + "px");
-  bs.setProperty("--gx", view.tx.toFixed(1) + "px");
-  bs.setProperty("--gy", view.ty.toFixed(1) + "px");
   clampTools();
   if (comentAberto) posicionarPop(); // a janelinha do comentário anda junto com o mapa
 }
