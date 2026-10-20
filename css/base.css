@@ -1,57 +1,77 @@
 /* Base: cores, letras, cabeçalho, botões e rodapé */
-/* Layout: abas de mapas em cima, quadro livre com grade de pontos; planos principais são cartões, planos conectados são pílulas; relatório abre numa aba lateral */
-/* Tema claro e sóbrio por padrão (pedido do Bruno): pedra clara, grafite, ferrugem e azul petróleo; letras condensadas firmes e cantos mais retos.
-   O botão no topo troca para o modo escuro (js/tema.js), que usa as mesmas cores sobre grafite escuro. */
+/* Visual da imagem que o Bruno mandou em 2026-10-20: fundo claro azulado, azul-marinho no texto, cartões brancos
+   bem arredondados, botões coloridos (plano azul, lista verde, agenda roxo, informativo laranja) e pontinhos no quadro.
+   O botão no topo troca para o modo escuro (js/tema.js), com as mesmas cores sobre azul-marinho escuro. */
 :root {
-  --bg: #f5f4f1;
+  --bg: #f3f6fb;
   --surface: #ffffff;
-  --fg: #23211f;
-  --muted: #6b665f;
-  --line: #e2ded7;
-  --grid: #e2ded7;
-  --accent: #1f6f78;
-  --danger: #b03a22;
-  --p-D: #2f5d7c;
-  --p-A: #b4552a;
-  --p-C: #5f7436;
-  --p-all: #5b5f66;
-  --st-doing: #c9922e;
-  --st-blocked: #b03a22;
-  --hit: #1f6f78;
-  --clay: #a64f2a;
-  --sand: #ece9e4;
-  --shadow: 0 6px 18px rgba(30, 28, 25, 0.07);
-  --label: #3b2a21;
+  --fg: #16213a;
+  --muted: #66728a;
+  --line: #e2e8f1;
+  --grid: #d9e0ec;
+  --accent: #2f6fdf;
+  --danger: #dc3a2f;
+  /* pessoas: Dev azul, Aquisição laranja, Conteúdo roxo, Todos azul-marinho */
+  --p-D: #2f6fdf;
+  --p-A: #ec7a1c;
+  --p-C: #8b5cf6;
+  --p-all: #33415c;
+  /* passos de Todos: cada número com uma cor, como na imagem */
+  --passo-1: #3b7be8;
+  --passo-2: #9b6cf0;
+  --passo-3: #21a268;
+  --passo-4: #ec7a1c;
+  --passo-5: #0f9aa8;
+  --b-plano: #2f6fdf;
+  --b-lista: #1f9d55;
+  --b-agenda: #8b5cf6;
+  --b-info: #f27a12;
+  --st-doing: #f0a020;
+  --st-blocked: #dc3a2f;
+  --hit: #2f6fdf;
+  --clay: #2f6fdf;
+  --sand: #eef2f8;
+  --shadow: 0 6px 20px rgba(22, 33, 58, 0.07);
+  --label: #16213a;
   --on-color: #fff;
   --on-fg: #fff;
-  --f-script: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
-  --f-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-script: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --f-display: "Barlow", "Segoe UI", system-ui, sans-serif;
   --f-body: "Barlow", "Segoe UI", system-ui, sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   color-scheme: light;
 }
 :root[data-tema="escuro"] {
-  --bg: #1b1a18;
-  --surface: #252320;
-  --fg: #ebe7e0;
-  --muted: #a29c92;
-  --line: #3b3833;
-  --grid: #3b3833;
-  --accent: #4a9fa9;
-  --danger: #d0583c;
-  --p-D: #6e9bc0;
-  --p-A: #d0794c;
-  --p-C: #97ad62;
-  --p-all: #a0a5ad;
-  --st-doing: #d6a243;
-  --st-blocked: #d0583c;
-  --hit: #4a9fa9;
-  --clay: #b45a31;
-  --sand: #2f2c28;
-  --shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-  --label: #efe9e2;
-  --on-color: #1b1a18;
-  --on-fg: #1b1a18;
+  --bg: #0e1524;
+  --surface: #172034;
+  --fg: #e7ecf6;
+  --muted: #98a4bb;
+  --line: #2a3651;
+  --grid: #2a3651;
+  --accent: #6b9cf5;
+  --danger: #f06a5f;
+  --p-D: #6b9cf5;
+  --p-A: #f39a4c;
+  --p-C: #a88bfa;
+  --p-all: #a9b6cf;
+  --passo-1: #6b9cf5;
+  --passo-2: #b294f7;
+  --passo-3: #4cc38a;
+  --passo-4: #f39a4c;
+  --passo-5: #3fc0cc;
+  --b-plano: #3d7be6;
+  --b-lista: #23a35d;
+  --b-agenda: #8f62f5;
+  --b-info: #f0801f;
+  --st-doing: #f3b23f;
+  --st-blocked: #f06a5f;
+  --hit: #6b9cf5;
+  --clay: #3d7be6;
+  --sand: #1d2840;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --label: #e7ecf6;
+  --on-color: #0e1524;
+  --on-fg: #0e1524;
   color-scheme: dark;
 }
 
@@ -85,10 +105,10 @@ h1 {
   font-family: var(--f-display);
   text-wrap: balance;
   margin: 0;
-  line-height: 1.05;
-  font-size: clamp(30px, 4.4vw, 46px);
-  font-weight: 800;
-  letter-spacing: 0.01em;
+  line-height: 1.08;
+  font-size: clamp(28px, 3.7vw, 42px);
+  font-weight: 700;
+  letter-spacing: 0;
   text-transform: uppercase;
   display: flex;
   align-items: center;
@@ -142,10 +162,10 @@ button:disabled {
 .score {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 14px;
   box-shadow: var(--shadow);
-  padding: 14px 18px 12px;
-  min-width: 300px;
+  padding: 16px 20px 14px;
+  min-width: 340px;
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -158,15 +178,15 @@ button:disabled {
 }
 .score-k {
   font-family: var(--f-display);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 .score .big {
   font-family: var(--f-display);
-  font-size: 28px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 700;
   line-height: 1;
   color: var(--fg);
 }
@@ -210,7 +230,7 @@ button:disabled {
 }
 .counts b {
   font-family: var(--f-display);
-  font-size: 21px;
+  font-size: 19px;
   font-weight: 700;
   line-height: 1.1;
   color: var(--fg);
@@ -264,13 +284,14 @@ button:disabled {
   font-size: 14px;
 }
 .chip {
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  border-radius: 6px;
-  padding: 9px 16px;
-  font-size: 12.5px;
+  border: 1px solid var(--line);
+  background: var(--sand);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
@@ -281,6 +302,14 @@ button:disabled {
   background: var(--fg);
   color: var(--on-fg);
 }
+.chip:hover:not([aria-pressed="true"]) {
+  border-color: var(--muted);
+  color: var(--fg);
+}
+/* no filtro as pessoas ficam só com o nome, como na imagem */
+.controls .chip .dot {
+  display: none;
+}
 .dot {
   width: 10px;
   height: 10px;
@@ -288,13 +317,13 @@ button:disabled {
   display: inline-block;
 }
 .btn {
-  border: 1.5px solid var(--line);
+  border: 1px solid var(--line);
   background: var(--surface);
-  border-radius: 6px;
-  padding: 9px 15px;
-  font-size: 12.5px;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
@@ -317,17 +346,45 @@ button:disabled {
 .btn .b-ic {
   margin-right: 2px;
 }
-.controls .btn:not(.primary) .b-ic {
-  color: var(--accent);
+/* os quatro botões de criar, cada um com a sua cor */
+#add-main {
+  --bc: var(--b-plano);
+}
+#add-list {
+  --bc: var(--b-lista);
+}
+#add-agenda {
+  --bc: var(--b-agenda);
+}
+#add-info {
+  --bc: var(--b-info);
+}
+.controls .btn:is(#add-main, #add-list, #add-agenda, #add-info) {
+  background: var(--bc);
+  border-color: var(--bc);
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 14px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--bc) 24%, transparent);
+}
+.controls .btn:is(#add-main, #add-list, #add-agenda, #add-info):hover:not(:disabled) {
+  border-color: var(--bc);
+  filter: brightness(1.07);
+}
+#undo {
+  background: var(--sand);
+  padding: 12px 18px;
+  font-size: 14px;
 }
 .search {
   display: flex;
   align-items: center;
-  gap: 9px;
-  border: 1.5px solid var(--line);
+  gap: 10px;
+  border: 1px solid var(--line);
   background: var(--surface);
-  border-radius: 6px;
-  padding: 8px 13px;
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(22, 33, 58, 0.03);
   min-width: 0;
   flex: 1 1 100%; /* a busca fica sozinha na linha de baixo, larga */
   color: var(--muted);
@@ -337,7 +394,7 @@ button:disabled {
   background: transparent;
   outline: none;
   width: 100%;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--fg);
 }
 .search:focus-within {
@@ -393,4 +450,13 @@ button:disabled {
 }
 .versao-nova .btn {
   padding: 6px 12px;
+}
+/* texto só para leitor de tela (o botão mostra só o ícone) */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

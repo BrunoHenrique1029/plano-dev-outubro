@@ -291,6 +291,11 @@ document.addEventListener("click", (e) => {
     case "down":
       shift(id, 1);
       break;
+    case "menu":
+      selected = selected === id ? null : id;
+      confirmDel = null;
+      render();
+      break;
     case "antes":
       moverNaOrdem(id, -1);
       break;

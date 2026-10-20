@@ -3,6 +3,11 @@ function applyView() {
   const w = $("#world");
   w.style.transform = `translate(${view.tx}px,${view.ty}px) scale(${view.s})`;
   w.style.setProperty("--inv", (1 / view.s).toFixed(3));
+  // os pontinhos do fundo andam e crescem junto com o mapa
+  const bs = $("#board").style;
+  bs.setProperty("--gs", (22 * view.s).toFixed(2) + "px");
+  bs.setProperty("--gx", view.tx.toFixed(1) + "px");
+  bs.setProperty("--gy", view.ty.toFixed(1) + "px");
   clampTools();
   if (comentAberto) posicionarPop(); // a janelinha do comentário anda junto com o mapa
 }
@@ -110,11 +115,21 @@ function render() {
   } else ban.hidden = true;
 
   const num = topNumbers();
-  let h = `<svg id="edges" aria-hidden="true"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted);stroke:none"/></marker></defs><g id="eg"></g></svg><div class="hubs" id="hubs"></div>`;
+  let h = `<svg id="edges" aria-hidden="true"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted);stroke:none"/></marker>${[
+    "D",
+    "A",
+    "C",
+    "all",
+  ]
+    .map(
+      (k) =>
+        `<marker id="arr-${k}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--p-${k});stroke:none"/></marker>`,
+    )
+    .join("")}</defs><g id="eg"></g></svg><div class="hubs" id="hubs"></div>`;
   list.forEach((n) => {
     if (!isShown(n)) return;
     const sub = !!parentOf(n),
-      c = `var(--p-${n.who || "all"})`,
+      c = corDe(n, num),
       isSel = selected === n.id,
       st = statusOf(n),
       lock = travado(n),
@@ -178,14 +193,17 @@ function render() {
     const ta = `<textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="${sub ? "Nome do sub-plano" : "Nome do plano"}" aria-label="Nome do plano">${esc(n.title)}</textarea>`;
     const ck = `<input type="checkbox" class="ck" data-act="done" data-id="${n.id}" ${st === "done" ? "checked" : ""} ${off} aria-label="Marcar como feito">`;
     const nf = (n.files || []).length;
+    // os três pontinhos abrem o mesmo menu de clicar no plano
+    const kb = lock
+      ? ""
+      : `<button class="kebab" data-act="menu" data-id="${n.id}" aria-label="Opções" title="Opções" aria-expanded="${isSel}">${ic(IC.mais, 18)}</button>`;
     const rep = `<button class="rep ${n.report || nf ? "has" : ""}" data-act="report" data-id="${n.id}" aria-label="Abrir relatório" title="Relatório">${ICON}${nf ? `<span class="clip">${nf}</span>` : ""}</button>`;
     const L = n.list || [],
       ld = L.filter((i) => i.done).length;
     // quanto já foi feito do que está ligado ao plano (sub-planos e itens das listas)
     const pg = isList(n) ? { total: 0 } : feitosDe(n.id),
-      prog = pg.total
-        ? `<div class="nprog"><span>${pg.feito} de ${pg.total} ${pg.total === 1 ? "concluído" : "concluídos"}</span><i><b style="width:${Math.round((pg.feito * 100) / pg.total)}%"></b></i></div>`
-        : "";
+      feitos = pg.total ? `${pg.feito} de ${pg.total} ${pg.total === 1 ? "concluído" : "concluídos"}` : "",
+      prog = feitos ? `<div class="nprog">${feitos}</div>` : "";
     const stp =
       st === "doing"
         ? `<span class="stp doing">Fazendo</span>`
@@ -195,21 +213,19 @@ function render() {
     if (isInfo(n)) {
       const corpo = canon(docHtml(n));
       h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode infonode${n.wide ? " wide" : ""}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">
-        <div class="lhead"><span class="lt"><span class="lic">${ic(IC.info, 14)}</span>Informativo · ${WHO[n.who || "all"]}</span><span class="right"><button class="info-ed" data-act="report" data-id="${n.id}">${lock ? "Ler" : "Editar"}</button></span></div>
-        <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="Título do informativo" aria-label="Título do informativo">${esc(n.title)}</textarea>
+        <div class="lhead"><span class="lic" title="Informativo · ${WHO[n.who || "all"]}">${ic(IC.info, 20)}</span><span class="lmeio"><textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="Título do informativo" aria-label="Título do informativo">${esc(n.title)}</textarea></span><span class="right"><button class="info-ed" data-act="report" data-id="${n.id}" title="${lock ? "Ler" : "Editar"} o informativo">${ic(IC.abrir, 17)}<span class="sr">${lock ? "Ler" : "Editar"}</span></button>${kb}</span></div>
         ${corpo ? `<div class="ed info-corpo" data-id="${n.id}">${corpo}</div>` : lock ? "" : `<button class="add-li" data-act="report" data-id="${n.id}">+ Escrever o informativo</button>`}
         ${tools}</div>`;
       return;
     }
     if (isAgenda(n)) {
-      h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode agendanode" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">${agendaRows(n, rep)}${tools}</div>`;
+      h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode agendanode" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">${agendaRows(n, rep, kb)}${tools}</div>`;
       return;
     }
     if (isList(n)) {
       const pct = L.length ? Math.round((ld * 100) / L.length) : 0;
       h += `<div class="${cls.replace(" sub", "").replace(" main", "")} listnode" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}">
-        <div class="lhead"><span class="lt"><span class="lic">${ic(IC.lista, 14)}</span>Lista · ${WHO[n.who || "all"]}</span><span class="right"><span class="lc">${ld}/${L.length}</span>${rep}</span></div>
-        <textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="Nome da lista" aria-label="Nome da lista">${esc(n.title)}</textarea>
+        <div class="lhead"><span class="lic">${ic(IC.lista, 20)}</span><span class="lmeio"><textarea rows="1" data-key="${n.id}" data-act="title" data-id="${n.id}" ${ro} placeholder="Nome da lista" aria-label="Nome da lista">${esc(n.title)}</textarea><span class="lt">Lista · ${WHO[n.who || "all"]} · <span class="lc">${ld}/${L.length}</span></span></span><span class="right">${rep}${kb}</span></div>
         <div class="lbar"><i style="width:${pct}%"></i></div>
         <table class="mtable"><tbody>${L.map(
           (i) => `<tr class="${i.done ? "ok" : ""}">
@@ -222,8 +238,8 @@ function render() {
       return;
     }
     h += sub
-      ? `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><span class="nic">${icQuem(n)}</span><span class="body">${ta}<span class="who-lbl">${WHO[n.who || "all"]}${pg.total ? `<span class="nfeito">${pg.feito}/${pg.total}</span>` : ""}${stp}</span></span>${rep}${ck}${tools}</div>`
-      : `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><div class="nhead"><span class="npasso"><span class="nnum">${num[n.id]}</span>Passo ${num[n.id]} · ${WHO[n.who || "all"]}</span><span class="right">${stp}${rep}${ck}</span></div>${ta}${prog}${tools}</div>`;
+      ? `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><span class="nic">${icQuem(n, 22)}</span><span class="body"><span class="ntop">${ta}${kb}</span><span class="who-lbl" title="${WHO[n.who || "all"]}"><span>${feitos || WHO[n.who || "all"]}</span>${stp}<span class="nlado">${rep}${ck}</span></span></span>${tools}</div>`
+      : `<div class="${cls}" data-id="${n.id}" style="left:${n.x || 0}px;top:${n.y || 0}px;--c:${c}"><div class="nhead"><span class="npasso"><span class="nnum">${num[n.id]}</span>Passo ${num[n.id]} · ${WHO[n.who || "all"]}</span><span class="right">${stp}${rep}${ck}${kb}</span></div><div class="nmeio"><span class="nbig">${ic(IC_PASSO[(num[n.id] - 1) % IC_PASSO.length], 34)}</span><div class="ncorpo">${ta}${prog}</div></div>${tools}</div>`;
   });
   $("#world").innerHTML = h + `<div class="pins" id="pins"></div>`;
   document.querySelectorAll("#world .info-corpo").forEach(showAssets);
@@ -316,7 +332,7 @@ function drawEdges() {
   for (let i = 0; i < tops.length - 1; i++) {
     const s = seg(tops[i], tops[i + 1]);
     if (s)
-      out += `<path d="M${s.x1},${s.y1} L${s.x2},${s.y2}" style="stroke:var(--muted)" stroke-width="3" marker-end="url(#arr)"/>`;
+      out += `<path d="M${s.x1},${s.y1} L${s.x2},${s.y2}" style="stroke:var(--muted)" stroke-width="2.5" marker-end="url(#arr)"/>`;
   }
   const hubs = {};
   let hb = "";
@@ -334,22 +350,23 @@ function drawEdges() {
     const left = B.cx - B.w,
       top = B.cy - B.h;
     if (h.trunk && left >= h.x + 8 && top > h.y) {
-      out += `<path d="M${h.x},${h.y} V${B.cy} H${left}" style="stroke:var(--p-${n.who || "all"})" stroke-width="3" stroke-linejoin="round"/>`;
+      out += `<path d="M${h.x},${h.y} V${B.cy} H${left - 1}" style="stroke:var(--p-${n.who || "all"})" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arr-${n.who || "all"})"/>`;
       return;
     }
     if (h.down && top > h.y + 24) {
       const my = h.y + Math.min(26, (top - h.y) / 2);
-      out += `<path d="M${h.x},${h.y} V${my} H${B.cx} V${top}" style="stroke:var(--p-${n.who || "all"})" stroke-width="3" stroke-linejoin="round"/>`;
+      out += `<path d="M${h.x},${h.y} V${my} H${B.cx} V${top - 1}" style="stroke:var(--p-${n.who || "all"})" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arr-${n.who || "all"})"/>`;
       return;
     }
     const [x2, y2] = clip(B, dx, dy);
-    out += `<path d="M${h.x},${h.y} L${x2},${y2}" style="stroke:var(--p-${n.who || "all"})" stroke-width="3"/>`;
+    out += `<path d="M${h.x},${h.y} L${x2},${y2}" style="stroke:var(--p-${n.who || "all"})" stroke-width="2.2" marker-end="url(#arr-${n.who || "all"})"/>`;
   });
+  const num = topNumbers();
   for (const [id, h] of Object.entries(hubs)) {
     const n = get(id),
       c = fechado(n),
       k = descCount(id);
-    hb += `<button class="hub ${c ? "closed" : ""} ${travadoPessoa(n) ? "lock" : ""}" data-act="fold" data-id="${id}" style="left:${h.x}px;top:${h.y}px;--c:var(--p-${n.who || "all"})" aria-expanded="${!c}" title="${c ? `Abrir ramificações (${k})` : "Fechar ramificações"}" aria-label="${c ? "Abrir ramificações" : "Fechar ramificações"}">${c ? "+" : "−"}${c ? `<span class="n">${k}</span>` : ""}</button>`;
+    hb += `<button class="hub ${c ? "closed" : ""} ${travadoPessoa(n) ? "lock" : ""}" data-act="fold" data-id="${id}" style="left:${h.x}px;top:${h.y}px;--c:${corDe(n, num)}" aria-expanded="${!c}" title="${c ? `Abrir ramificações (${k})` : "Fechar ramificações"}" aria-label="${c ? "Abrir ramificações" : "Fechar ramificações"}">${c ? "+" : "−"}${c ? `<span class="n">${k}</span>` : ""}</button>`;
   }
   g.innerHTML = out;
   const hd = document.getElementById("hubs");

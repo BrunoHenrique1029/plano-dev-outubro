@@ -297,3 +297,10 @@
     transition: none !important;
   }
 }
+@media (max-width: 420px) {
+  /* no celular os botões coloridos de criar ficam mais baixos para caber os quatro na linha */
+  .controls .btn:is(#add-main, #add-list, #add-agenda, #add-info) {
+    padding: 10px 4px;
+    font-size: 13px;
+  }
+}

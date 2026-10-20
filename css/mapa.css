@@ -16,9 +16,9 @@
   flex: none;
   border: 1px solid var(--line);
   border-bottom: 0;
-  border-top: 4px solid var(--c, var(--line)); /* a cor da pessoa do mapa */
+  border-top: 3px solid var(--c, var(--line)); /* a cor da pessoa do mapa */
   background: var(--sand);
-  border-radius: 6px 6px 0 0;
+  border-radius: 10px 10px 0 0;
   padding: 8px 14px;
   font-weight: 600;
   font-size: 13px;
@@ -99,9 +99,13 @@
 .board {
   position: relative;
   height: max(480px, 70vh);
-  background: var(--surface);
+  /* pontinhos de fundo que andam e crescem junto com o mapa (applyView muda --gx, --gy e --gs) */
+  background-color: color-mix(in srgb, var(--bg) 45%, var(--surface));
+  background-image: radial-gradient(circle, var(--grid) 1.1px, transparent 1.5px);
+  background-size: var(--gs, 22px) var(--gs, 22px);
+  background-position: var(--gx, 0) var(--gy, 0);
   border: 1px solid var(--line);
-  border-radius: 0 8px 8px 8px;
+  border-radius: 0 16px 16px 16px;
   box-shadow: var(--shadow);
   overflow: hidden;
   touch-action: none;
@@ -146,84 +150,123 @@
   cursor: grabbing;
   z-index: 5;
 }
+/* passo: cartão claro na cor dele, número na bolinha, ícone grande e quanto já foi feito */
 .node.main {
-  width: 240px;
-  background: color-mix(in srgb, var(--c) 7%, var(--surface));
+  width: 310px;
+  background: color-mix(in srgb, var(--c) 8%, var(--surface));
   color: var(--fg);
-  border: 1.5px solid color-mix(in srgb, var(--c) 45%, var(--surface));
-  border-left: 5px solid var(--c);
-  border-radius: 8px;
-  padding: 11px 13px 12px;
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 32%, var(--surface));
+  border-radius: 14px;
+  padding: 12px 14px 14px 16px;
+  gap: 8px;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--c) 11%, transparent);
 }
-/* o número do passo numa bolinha, como nas imagens de referência */
 .npasso {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .nnum {
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: var(--c);
-  color: var(--on-color);
+  background: color-mix(in srgb, var(--c) 72%, var(--surface));
+  color: #fff;
   font-family: var(--f-display);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0;
   display: grid;
   place-content: center;
 }
+.nmeio {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.nbig {
+  flex: none;
+  color: var(--c);
+  padding-top: 2px;
+}
+.nbig svg {
+  display: block;
+  stroke-width: 1.9;
+}
+.ncorpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 /* quanto do que está ligado ao passo já foi feito */
 .nprog {
-  display: grid;
-  gap: 5px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
-.nprog i {
-  display: block;
-  height: 4px;
-  border-radius: 99px;
-  background: color-mix(in srgb, var(--c) 16%, var(--surface));
-  overflow: hidden;
-}
-.nprog b {
-  display: block;
-  height: 100%;
-  background: var(--c);
-}
 .node.main .nhead > span:first-child {
-  color: color-mix(in srgb, var(--c) 78%, var(--label));
+  color: color-mix(in srgb, var(--c) 55%, var(--fg));
 }
+/* sub-plano: cartão com o ícone da pessoa num quadrado, nome e quanto já foi feito */
 .node.sub {
-  width: 252px;
-  background: var(--surface);
+  width: 300px;
+  background: color-mix(in srgb, var(--c) 7%, var(--surface));
   color: var(--fg);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--c) 12%, transparent);
-  border: 2px solid var(--c);
-  border-radius: 999px;
-  padding: 6px 10px 6px 6px;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 30%, var(--surface));
+  border-radius: 14px;
+  padding: 12px 10px 12px 12px;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 /* o ícone da pessoa: Dev código, Aquisição pessoas, Conteúdo vídeo, Todos bandeira */
 .nic {
   flex: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--c) 14%, var(--surface));
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--c) 17%, var(--surface));
   color: var(--c);
   display: grid;
   place-content: center;
 }
-.nfeito {
-  font-family: var(--f-mono);
-  letter-spacing: 0;
+.ntop {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+.ntop textarea {
+  flex: 1;
+  min-width: 0;
+  padding-top: 3px;
+}
+.nlado {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+/* os três pontinhos: abrem o menu do plano */
+.kebab {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  display: grid;
+  place-content: center;
+  padding: 0;
+}
+.kebab:hover,
+.kebab[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--c) 14%, var(--surface));
+  color: var(--fg);
 }
 .node.sel {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 35%, transparent);
@@ -252,15 +295,15 @@
   align-items: center;
   gap: 6px;
   font-family: var(--f-body);
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 600;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .nhead .right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .node.sub .body {
   display: flex;
@@ -290,10 +333,12 @@
   color: var(--fg);
   font-family: var(--f-display);
   font-weight: 700;
-  font-size: 21px;
+  font-size: 22px;
   letter-spacing: 0.01em;
   line-height: 1.2;
-  border-bottom-color: color-mix(in srgb, var(--c) 35%, transparent);
+  text-transform: uppercase;
+  border-bottom: 1px solid color-mix(in srgb, var(--c) 22%, transparent);
+  padding-bottom: 6px;
 }
 .node.main textarea::placeholder {
   color: var(--muted);
@@ -301,8 +346,10 @@
 .node.sub textarea {
   color: var(--fg);
   font-weight: 700;
-  font-size: 14.5px;
+  font-size: 15.5px;
   line-height: 1.25;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 .node.sub textarea:focus {
   border-bottom-color: var(--line);
@@ -348,12 +395,10 @@
   border-color: var(--on-color);
 }
 .who-lbl {
-  font-size: 10.5px;
+  font-size: 13px;
   font-family: var(--f-body);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.85;
+  font-weight: 500;
+  color: var(--muted);
   display: flex;
   gap: 6px;
   align-items: center;
@@ -377,8 +422,8 @@
 }
 .rep {
   flex: none;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 1.5px solid var(--c);
   background: var(--surface);
@@ -515,7 +560,7 @@
   gap: 6px;
   border: 1px solid var(--line);
   background: var(--surface);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 7px 11px;
   font-weight: 600;
   font-size: 12px;
@@ -571,29 +616,24 @@
   justify-self: center;
 }
 
-/* lista visual no mapa */
+/* lista visual no mapa: cartão branco, ícone num quadrado, nome e quanto já foi feito */
 .node.listnode {
-  width: 280px;
+  width: 300px;
   background: var(--surface);
   color: var(--fg);
-  border: 1.5px solid color-mix(in srgb, var(--c) 30%, var(--line));
-  border-top: 4px solid var(--c);
-  border-radius: 8px;
-  padding: 11px 13px 12px;
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 26%, var(--line));
+  border-radius: 14px;
+  padding: 12px 12px 12px 12px;
+  gap: 8px;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 9%, transparent);
 }
 /* ícone do tipo de bloco: lista, agenda ou informativo */
-.lhead .lt {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
 .lic {
   flex: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--c) 14%, var(--surface));
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--c) 15%, var(--surface));
   color: var(--c);
   display: grid;
   place-content: center;
@@ -602,30 +642,42 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
   font-family: var(--f-body);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--c);
 }
-.lhead .right {
+.lmeio {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 1px;
 }
-.lhead .lc {
-  font-family: var(--f-mono);
-  font-size: 11.5px;
+.lhead .lt {
+  font-size: 13px;
+  font-weight: 500;
   color: var(--muted);
 }
-.node.listnode textarea {
+.lhead .right {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.lhead .lc {
+  font-weight: 600;
+  color: var(--muted);
+}
+.node.listnode .lhead textarea {
   font-family: var(--f-display);
-  font-weight: 700;
-  font-size: 18px;
+  font-weight: 600;
+  font-size: 16px;
   color: var(--fg);
-  border-bottom-color: var(--line);
+}
+.node.infonode .lhead textarea {
+  font-weight: 700;
+  font-size: 16.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 .mtable {
   width: 100%;
@@ -714,7 +766,7 @@
 }
 .add-li {
   align-self: flex-start;
-  border: 1.5px dashed var(--c);
+  border: 1px dashed var(--c);
   color: var(--c);
   background: var(--surface);
   border-radius: 8px;
@@ -746,11 +798,11 @@
 .hub {
   position: absolute;
   z-index: 4;
-  width: 26px;
-  height: 26px;
-  margin: -13px 0 0 -13px;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
   border-radius: 50%;
-  border: 2.5px solid var(--c);
+  border: 2px solid var(--c);
   background: var(--surface);
   color: var(--c);
   display: flex;
@@ -803,25 +855,25 @@
 
 /* informativo no mapa: título e o texto (com tabelas) escrito no editor do relatório */
 .node.infonode {
-  width: 460px;
+  width: 440px;
 }
 .node.infonode.wide {
   width: 860px;
 }
+/* botão de abrir o informativo (a setinha para fora, como na imagem) */
 .info-ed {
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  color: var(--fg);
-  border-radius: 4px;
-  padding: 2px 9px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: none;
+  color: var(--c);
+  border-radius: 8px;
+  padding: 0;
+  display: grid;
+  place-content: center;
 }
 .info-ed:hover {
-  border-color: var(--c);
-  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, var(--surface));
 }
 .node .ed.info-corpo {
   flex: none;
@@ -852,12 +904,14 @@
 .info-corpo h3 {
   font-size: 16px;
 }
-.info-corpo table {
+.node .info-corpo table {
   font-size: 13px;
   line-height: 1.45;
   margin: 8px 0 4px;
+  table-layout: auto; /* no mapa as colunas seguem o texto, sem quebrar palavra no meio */
 }
-.info-corpo td,
-.info-corpo th {
-  padding: 6px 8px;
+.node .info-corpo td,
+.node .info-corpo th {
+  padding: 7px 9px;
+  overflow-wrap: break-word;
 }

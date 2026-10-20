@@ -366,12 +366,14 @@ async function tidy() {
   };
   const GAPX = 90,
     GAPG = 260,
-    GAPC = 34,
+    GAPC = 56,
     GAPY = 22,
     HUBY = 34,
     ROWY = 56,
     IND = 40;
-  const tops = [...steps(null), ...kids(null).filter(isList)];
+  // informativos soltos ficam numa coluna à esquerda (como na imagem); listas e agendas soltas, depois dos passos
+  const soltos = kids(null).filter(isInfo),
+    tops = [...steps(null), ...kids(null).filter((n) => isList(n) && !isInfo(n))];
   const pos = {};
   // uma pilha: o plano e, embaixo, o que está dentro dele (relativo a 0,0); devolve largura, altura e posições
   const stack = (n) => {
@@ -397,6 +399,17 @@ async function tidy() {
   };
   const aberto = (t) => !!t && !t.collapsed && kids(t.id).length > 0;
   let x = 40;
+  if (soltos.length) {
+    let y = 40,
+      w = 0;
+    for (const n of soltos) {
+      const s = size(n.id);
+      pos[n.id] = { x: 40, y };
+      y += s.h + 28;
+      w = Math.max(w, s.w);
+    }
+    x += w + 120;
+  }
   for (const [i, t] of tops.entries()) {
     const ts = size(t.id),
       ks = kids(t.id);
