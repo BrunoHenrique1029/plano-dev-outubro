@@ -27,11 +27,8 @@ Object.assign(IC, {
   abrir:
     '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
 });
-// cor do plano: passo de Todos ganha a cor do número dele (como na imagem); o resto fica com a cor da pessoa
-const corDe = (n, num) =>
-  !parentOf(n) && !isList(n) && (n.who || "all") === "all" && num && num[n.id]
-    ? `var(--passo-${((num[n.id] - 1) % 5) + 1})`
-    : `var(--p-${n.who || "all"})`;
+// cor do bloco: os passos ficam cinza; sub-planos, listas, agendas e informativos ficam com a cor da pessoa
+const corDe = (n) => (!parentOf(n) && !isList(n) ? "var(--passo-cinza)" : `var(--p-${n.who || "all"})`);
 
 let nodes = [],
   maps = [],

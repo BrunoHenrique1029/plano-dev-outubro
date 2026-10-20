@@ -146,12 +146,12 @@
   cursor: grabbing;
   z-index: 5;
 }
-/* passo: cartão claro na cor dele, número na bolinha e quanto já foi feito (sem brilho em volta) */
+/* passo: cartão liso e cinza, número na bolinha e quanto já foi feito (sem brilho em volta) */
 .node.main {
   width: 310px;
-  background: color-mix(in srgb, var(--c) 8%, var(--surface));
+  background: var(--surface);
   color: var(--fg);
-  border: 1px solid color-mix(in srgb, var(--c) 32%, var(--surface));
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 12px 14px 14px 16px;
   gap: 8px;
@@ -188,12 +188,12 @@
 .node.main .nhead > span:first-child {
   color: color-mix(in srgb, var(--c) 55%, var(--fg));
 }
-/* sub-plano: cartão com o ícone da pessoa num quadrado, nome e quanto já foi feito */
+/* sub-plano: cartão liso com o ícone da pessoa num quadrado, nome e quanto já foi feito */
 .node.sub {
   width: 300px;
-  background: color-mix(in srgb, var(--c) 7%, var(--surface));
+  background: var(--surface);
   color: var(--fg);
-  border: 1px solid color-mix(in srgb, var(--c) 30%, var(--surface));
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 12px 10px 12px 12px;
   flex-direction: row;
@@ -316,7 +316,7 @@
   letter-spacing: 0.01em;
   line-height: 1.2;
   text-transform: uppercase;
-  border-bottom: 1px solid color-mix(in srgb, var(--c) 22%, transparent);
+  border-bottom: 1px solid var(--line);
   padding-bottom: 6px;
 }
 .node.main textarea::placeholder {
@@ -600,25 +600,10 @@
   width: 300px;
   background: var(--surface);
   color: var(--fg);
-  border: 1px solid color-mix(in srgb, var(--c) 26%, var(--line));
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 12px 12px 12px 12px;
   gap: 8px;
-}
-/* no escuro, todos os blocos ficam cinza (cartão, número, ícone, botões e bolinha de abrir);
-   a pessoa aparece pelo nome escrito no bloco e pela cor da seta.
-   O !important passa por cima da cor que cada bloco recebe no style */
-:root[data-tema="escuro"] :is(.node, .hub) {
-  --c: var(--bloco-escuro) !important;
-}
-:root[data-tema="escuro"] .node.main,
-:root[data-tema="escuro"] .node.sub,
-:root[data-tema="escuro"] .node.listnode {
-  background: var(--surface);
-  border-color: var(--line);
-}
-:root[data-tema="escuro"] .node.main textarea {
-  border-bottom-color: var(--line);
 }
 /* ícone do tipo de bloco: lista, agenda ou informativo */
 .lic {

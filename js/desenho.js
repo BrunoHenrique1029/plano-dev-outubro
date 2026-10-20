@@ -124,7 +124,7 @@ function render() {
   list.forEach((n) => {
     if (!isShown(n)) return;
     const sub = !!parentOf(n),
-      c = corDe(n, num),
+      c = corDe(n),
       isSel = selected === n.id,
       st = statusOf(n),
       lock = travado(n),
@@ -356,12 +356,11 @@ function drawEdges() {
     const [x2, y2] = clip(B, dx, dy);
     out += `<path d="M${h.x},${h.y} L${x2},${y2}" style="stroke:var(--p-${n.who || "all"})" stroke-width="2.2" marker-end="url(#arr-${n.who || "all"})"/>`;
   });
-  const num = topNumbers();
   for (const [id, h] of Object.entries(hubs)) {
     const n = get(id),
       c = fechado(n),
       k = descCount(id);
-    hb += `<button class="hub ${c ? "closed" : ""} ${travadoPessoa(n) ? "lock" : ""}" data-act="fold" data-id="${id}" style="left:${h.x}px;top:${h.y}px;--c:${corDe(n, num)}" aria-expanded="${!c}" title="${c ? `Abrir ramificações (${k})` : "Fechar ramificações"}" aria-label="${c ? "Abrir ramificações" : "Fechar ramificações"}">${c ? "+" : "−"}${c ? `<span class="n">${k}</span>` : ""}</button>`;
+    hb += `<button class="hub ${c ? "closed" : ""} ${travadoPessoa(n) ? "lock" : ""}" data-act="fold" data-id="${id}" style="left:${h.x}px;top:${h.y}px;--c:${corDe(n)}" aria-expanded="${!c}" title="${c ? `Abrir ramificações (${k})` : "Fechar ramificações"}" aria-label="${c ? "Abrir ramificações" : "Fechar ramificações"}">${c ? "+" : "−"}${c ? `<span class="n">${k}</span>` : ""}</button>`;
   }
   g.innerHTML = out;
   const hd = document.getElementById("hubs");

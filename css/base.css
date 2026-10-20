@@ -16,11 +16,7 @@
   --p-C: #8b5cf6;
   --p-all: #33415c;
   /* passos de Todos: cada número com uma cor, como na imagem */
-  --passo-1: #3b7be8;
-  --passo-2: #9b6cf0;
-  --passo-3: #21a268;
-  --passo-4: #ec7a1c;
-  --passo-5: #0f9aa8;
+  --passo-cinza: #5b6476; /* passos: número, nome do passo, botões e bolinha de abrir */
   --b-plano: #2f6fdf;
   --b-lista: #1f9d55;
   --b-agenda: #8b5cf6;
@@ -57,11 +53,7 @@
   --p-A: #f39a4c;
   --p-C: #a88bfa;
   --p-all: #b5bac4;
-  --passo-1: #6b9cf5;
-  --passo-2: #b294f7;
-  --passo-3: #4cc38a;
-  --passo-4: #f39a4c;
-  --passo-5: #3fc0cc;
+  --passo-cinza: #9ca2ad;
   --b-plano: #3d7be6;
   --b-lista: #23a35d;
   --b-agenda: #8f62f5;
@@ -75,8 +67,6 @@
   --label: #eceef2;
   --on-color: #17191c;
   --on-fg: #17191c;
-  /* cor de todos os blocos do mapa no escuro (no lugar da cor da pessoa ou do passo) */
-  --bloco-escuro: #9ca2ad;
   --tab-cab: #323946;
   --tab-cab-txt: #eceef2;
   --tab-cab-linha: #444c5a;
