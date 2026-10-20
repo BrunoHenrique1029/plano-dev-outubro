@@ -605,6 +605,16 @@
   padding: 12px 12px 12px 12px;
   gap: 8px;
 }
+/* no escuro, os cartões ficam cinza; a cor da pessoa fica só no número, no ícone e nas setas */
+:root[data-tema="escuro"] .node.main,
+:root[data-tema="escuro"] .node.sub,
+:root[data-tema="escuro"] .node.listnode {
+  background: var(--surface);
+  border-color: var(--line);
+}
+:root[data-tema="escuro"] .node.main textarea {
+  border-bottom-color: var(--line);
+}
 /* ícone do tipo de bloco: lista, agenda ou informativo */
 .lic {
   flex: none;

@@ -440,9 +440,9 @@
 .ed table.cab-coluna tr > :first-child,
 .info-corpo table:not([class]) tr:first-child > *,
 .drawer.info .ed table:not([class]) tr:first-child > * {
-  background: var(--fg);
-  color: var(--surface);
-  border-color: var(--muted);
+  background: var(--tab-cab);
+  color: var(--tab-cab-txt);
+  border-color: var(--tab-cab-linha);
   font-family: var(--f-display);
   font-size: 1.08em;
   font-weight: 700;

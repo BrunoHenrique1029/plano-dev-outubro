@@ -34,24 +34,29 @@
   --label: #16213a;
   --on-color: #fff;
   --on-fg: #fff;
+  /* cabeçalho das tabelas */
+  --tab-cab: #16213a;
+  --tab-cab-txt: #fff;
+  --tab-cab-linha: #66728a;
   --f-script: "Barlow", "Segoe UI", system-ui, sans-serif;
   --f-display: "Barlow", "Segoe UI", system-ui, sans-serif;
   --f-body: "Barlow", "Segoe UI", system-ui, sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   color-scheme: light;
 }
+/* escuro: cinza quase sem cor, com um toque leve de azul */
 :root[data-tema="escuro"] {
-  --bg: #181818;
-  --surface: #212121;
-  --fg: #ececec;
-  --muted: #a3a3a3;
-  --line: #323232;
+  --bg: #17191c;
+  --surface: #202328;
+  --fg: #eceef2;
+  --muted: #a1a6b0;
+  --line: #31353c;
   --accent: #6b9cf5;
   --danger: #f06a5f;
   --p-D: #6b9cf5;
   --p-A: #f39a4c;
   --p-C: #a88bfa;
-  --p-all: #b8b8b8;
+  --p-all: #b5bac4;
   --passo-1: #6b9cf5;
   --passo-2: #b294f7;
   --passo-3: #4cc38a;
@@ -65,11 +70,14 @@
   --st-blocked: #f06a5f;
   --hit: #6b9cf5;
   --clay: #3d7be6;
-  --sand: #2a2a2a;
+  --sand: #292c32;
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  --label: #ececec;
-  --on-color: #181818;
-  --on-fg: #181818;
+  --label: #eceef2;
+  --on-color: #17191c;
+  --on-fg: #17191c;
+  --tab-cab: #323946;
+  --tab-cab-txt: #eceef2;
+  --tab-cab-linha: #444c5a;
   color-scheme: dark;
 }
 

@@ -13,26 +13,40 @@ let procurarVersaoNova = () => {};
     .map((u) => new URL(u, location.href))
     .filter((u) => u.origin === location.origin)
     .map((u) => u.href);
-  const marca = (r) => (r.ok ? r.headers.get("etag") || r.headers.get("last-modified") || "" : "");
+  // data de publicação do arquivo (e a etiqueta, para quando o servidor não manda a data)
+  const marca = (r) =>
+    r.ok
+      ? { data: Date.parse(r.headers.get("last-modified") || "") || 0, tag: r.headers.get("etag") || "" }
+      : null;
+  /* Só conta como versão nova quando o servidor tem um arquivo MAIS NOVO que o deste aparelho.
+     Logo depois de um push, alguns servidores do GitHub ainda entregam a versão anterior por alguns
+     minutos: comparar só "diferente" fazia o aviso voltar várias vezes. */
+  const maisNovo = (a, b) =>
+    !!(a && b) && (a.data && b.data ? b.data > a.data : !!(a.tag && b.tag) && a.tag !== b.tag);
   // a versão que este aparelho está usando é a que ficou guardada no navegador
-  const usando = Promise.all(enderecos.map((u) => fetch(u, { cache: "force-cache" }).then(marca, () => "")));
+  const usando = Promise.all(
+    enderecos.map((u) => fetch(u, { cache: "force-cache" }).then(marca, () => null)),
+  );
   let ultima = 0,
     achou = false;
   procurarVersaoNova = async () => {
     if (achou || document.hidden || Date.now() - ultima < 30000) return;
     ultima = Date.now();
     const antes = await usando;
-    // "no-cache" pergunta ao servidor e já guarda o arquivo novo, para o Atualizar pegar a versão nova
+    // "no-store" só pergunta ao servidor: não troca o que está guardado (quem troca é o Atualizar)
     const agora = await Promise.all(
-      enderecos.map((u) => fetch(u, { cache: "no-cache" }).then(marca, () => "")),
+      enderecos.map((u) => fetch(u, { cache: "no-store" }).then(marca, () => null)),
     );
-    if (agora.some((m, i) => m && antes[i] && m !== antes[i])) {
+    if (agora.some((m, i) => maisNovo(antes[i], m))) {
       achou = true;
       $("#versao-nova").hidden = false;
     }
   };
-  $("#versao-atualizar").onclick = () => {
+  $("#versao-atualizar").onclick = async () => {
     if (typeof flushReport === "function" && reportId) flushReport();
+    // baixa de novo os arquivos (e guarda), para o recarregar usar a versão nova; no máximo 6 s
+    const baixar = Promise.all(enderecos.map((u) => fetch(u, { cache: "reload" }).catch(() => {})));
+    await Promise.race([baixar, new Promise((ok) => setTimeout(ok, 6000))]);
     location.reload();
   };
   setTimeout(procurarVersaoNova, 5000);
